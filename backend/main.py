@@ -28,15 +28,27 @@ logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 GENERATED_DIR = os.path.join(BASE_DIR, "generated")
 
+# Created here (at import time) rather than only in lifespan/startup: the
+# StaticFiles mounts below run as soon as this module is imported, before
+# the lifespan startup hook fires — so these directories must already
+# exist by then. Also needed regardless of Git, since empty folders (with
+# nothing but a .gitignore rule inside them) aren't tracked by Git and
+# won't exist at all on a fresh clone/deploy.
+os.makedirs(GARMENT_DIR, exist_ok=True)
+os.makedirs(GENERATED_DIR, exist_ok=True)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Re-affirmed here too (harmless if they already exist) for local dev
+    # runs that import main.py differently.
     os.makedirs(GARMENT_DIR, exist_ok=True)
     os.makedirs(GENERATED_DIR, exist_ok=True)
 
     # Try-on garment catalog DB
     init_db()
     logger.info("✅ Garment catalog DB initialized.")
+
 
     # GlamourBot vectorstore + RAG client (builds the embedding index on
     # first run if vector_db/ is missing — otherwise loads the prebuilt one)
