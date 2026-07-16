@@ -7,6 +7,7 @@ routing), voice input/output, weather lookup, and knowledge-base rebuild.
 import os
 import logging
 from typing import Optional
+from urllib.parse import quote
 
 from fastapi import APIRouter, UploadFile, File, Response
 from pydantic import BaseModel
@@ -77,7 +78,11 @@ async def voice_input(audio: UploadFile = File(...), city: Optional[str] = None)
     return Response(
         content=audio_response,
         media_type="audio/mpeg",
-        headers={"X-Transcript": user_text, "X-Response": answer},
+        # HTTP headers must be Latin-1-safe — GlamourBot's replies routinely
+        # contain Urdu script and emoji, which would otherwise crash this
+        # response with a UnicodeEncodeError. Percent-encoding here (and
+        # decodeURIComponent on the frontend) keeps the raw text intact.
+        headers={"X-Transcript": quote(user_text), "X-Response": quote(answer)},
     )
 
 

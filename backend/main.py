@@ -79,6 +79,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # Without this, the browser hides custom response headers from JS by
+    # default (only a small "safe list" is exposed automatically) — the
+    # voice input endpoint relies on the frontend being able to read
+    # X-Transcript/X-Response, so they must be explicitly allowed here.
+    expose_headers=["X-Transcript", "X-Response"],
 )
 
 # Static file serving

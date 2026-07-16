@@ -8,11 +8,21 @@ export default function ChatbotPanel() {
   const [input, setInput] = useState("");
   const [city, setCity] = useState("");
   const [sending, setSending] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [voiceBusy, setVoiceBusy] = useState(false);
   const scrollRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
+  const audioPlayerRef = useRef(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  // Stop any active mic stream if the component unmounts mid-recording
+  // (e.g. the user switches tabs while recording).
+  useEffect(() => () => streamRef.current?.getTracks().forEach((t) => t.stop()), []);
 
   const send = async () => {
     const text = input.trim();
@@ -33,6 +43,71 @@ export default function ChatbotPanel() {
       setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't reach the backend: ${err.message}` }]);
     } finally {
       setSending(false);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      audioChunksRef.current = [];
+
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        sendVoice(blob);
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't access microphone: ${err.message}` }]);
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const sendVoice = async (blob) => {
+    setVoiceBusy(true);
+    try {
+      const formData = new FormData();
+      formData.append("audio", blob, "recording.webm");
+
+      const url = `${API_BASE}/voice/input${city ? `?city=${encodeURIComponent(city)}` : ""}`;
+      const res = await fetch(url, { method: "POST", body: formData });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+      // Headers are percent-encoded on the backend (Urdu script/emoji
+      // aren't valid raw HTTP header bytes) — decode them back here.
+      const transcriptHeader = res.headers.get("X-Transcript");
+      const responseHeader = res.headers.get("X-Response");
+      const transcript = transcriptHeader ? decodeURIComponent(transcriptHeader) : "(voice message)";
+      const answer = responseHeader ? decodeURIComponent(responseHeader) : "";
+
+      setMessages((m) => [...m, { role: "user", text: transcript }, { role: "bot", text: answer }]);
+
+      const audioBlob = await res.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.src = audioUrl;
+        audioPlayerRef.current.play().catch(() => {
+          // Autoplay can be blocked by the browser — not fatal, the text
+          // reply is already shown either way.
+        });
+      }
+    } catch (err) {
+      setMessages((m) => [...m, { role: "bot", text: `⚠️ Voice message failed: ${err.message}` }]);
+    } finally {
+      setVoiceBusy(false);
     }
   };
 
@@ -107,25 +182,42 @@ export default function ChatbotPanel() {
               {renderText(m.text)}
             </div>
           ))}
-          {sending && (
+          {(sending || voiceBusy) && (
             <div style={S.spinnerWrap}>
-              <span style={S.spinner} /> GlamourBot is thinking…
+              <span style={S.spinner} /> {voiceBusy ? "Listening & thinking…" : "GlamourBot is thinking…"}
             </div>
           )}
         </div>
 
+        <audio ref={audioPlayerRef} style={{ display: "none" }} />
+
         <div style={{ display: "flex", gap: 8 }}>
+          <button
+            style={{
+              ...S.btnSecondary,
+              padding: "9px 14px",
+              borderColor: isRecording ? COLORS.red : S.btnSecondary.border,
+              color: isRecording ? COLORS.red : S.btnSecondary.color,
+              background: isRecording ? COLORS.redSoftBg : S.btnSecondary.background,
+            }}
+            onClick={isRecording ? stopRecording : startRecording}
+            disabled={sending || voiceBusy}
+            title={isRecording ? "Stop recording" : "Speak your question"}
+          >
+            {isRecording ? "⏹ Stop" : "🎤"}
+          </button>
           <input
             style={{ ...S.input, flex: 1 }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Ask about outfits, occasions, or products…"
+            placeholder={isRecording ? "Recording… speak now" : "Ask about outfits, occasions, or products…"}
+            disabled={isRecording}
           />
           <button
             style={{ ...S.btnPrimary, opacity: sending || !input.trim() ? 0.5 : 1 }}
             onClick={send}
-            disabled={sending || !input.trim()}
+            disabled={sending || !input.trim() || isRecording}
           >
             Send
           </button>
