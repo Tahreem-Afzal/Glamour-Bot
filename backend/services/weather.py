@@ -84,6 +84,58 @@ def get_weather(city_name: str = DEFAULT_CITY) -> dict:
         }
 
 
+def get_forecast(city_name: str, target_date: str) -> dict:
+    """Forecast for a specific future date (YYYY-MM-DD), up to 16 days out
+    — Open-Meteo's free forecast API supports this range without any extra
+    key or paid tier. Used for the 'Plan Ahead' event-outfit flow."""
+    loc = geocode_city(city_name)
+    if loc is None:
+        loc = {"lat": DEFAULT_LAT, "lon": DEFAULT_LON, "name": city_name, "country": ""}
+
+    try:
+        r = requests.get(
+            FORECAST_URL,
+            params={
+                "latitude": loc["lat"], "longitude": loc["lon"],
+                "daily": "temperature_2m_max,temperature_2m_min,weather_code",
+                "timezone": "auto",
+                "start_date": target_date, "end_date": target_date,
+            },
+            timeout=8,
+        )
+        r.raise_for_status()
+        daily = r.json().get("daily", {})
+        dates = daily.get("time", [])
+        if target_date not in dates:
+            return {"ok": False, "city": loc["name"], "date": target_date, "reason": "date_out_of_range"}
+
+        i = dates.index(target_date)
+        code = daily.get("weather_code", [0])[i]
+        condition = WEATHER_CODE_LABELS.get(code, "unknown")
+        temp_max = daily.get("temperature_2m_max", [None])[i]
+        temp_min = daily.get("temperature_2m_min", [None])[i]
+
+        return {
+            "ok": True, "city": loc["name"], "date": target_date,
+            "temp_max_c": temp_max, "temp_min_c": temp_min,
+            "condition": condition, "weather_code": code,
+        }
+    except Exception as e:
+        print(f"[Weather] Forecast fetch failed for '{city_name}' on {target_date}: {e}")
+        return {"ok": False, "city": city_name, "date": target_date, "reason": str(e)}
+
+
+def forecast_to_fabric_hint(forecast: dict) -> dict:
+    """Same fabric-weighting logic as weather_to_fabric_hint(), adapted for
+    a future-date forecast (which has a max/min range instead of one
+    current reading) — averages them and reuses the identical thresholds."""
+    if not forecast.get("ok") or forecast.get("temp_max_c") is None:
+        return {"prefer_fabrics": [], "avoid_fabrics": [], "note": ""}
+
+    avg_temp = (forecast["temp_max_c"] + forecast["temp_min_c"]) / 2
+    return weather_to_fabric_hint({"ok": True, "temp_c": avg_temp, "city": forecast["city"]})
+
+
 def weather_to_fabric_hint(weather: dict) -> dict:
     if not weather.get("ok") or weather.get("temp_c") is None:
         return {"prefer_fabrics": [], "avoid_fabrics": [], "note": ""}

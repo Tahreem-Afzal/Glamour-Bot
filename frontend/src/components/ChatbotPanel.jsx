@@ -9,12 +9,16 @@ export default function ChatbotPanel() {
   const [city, setCity] = useState("");
   const [sending, setSending] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceBusy, setVoiceBusy] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
   const scrollRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
   const audioPlayerRef = useRef(null);
+  const recordTimerRef = useRef(null);
+  const recordStartRef = useRef(0);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -22,7 +26,10 @@ export default function ChatbotPanel() {
 
   // Stop any active mic stream if the component unmounts mid-recording
   // (e.g. the user switches tabs while recording).
-  useEffect(() => () => streamRef.current?.getTracks().forEach((t) => t.stop()), []);
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    clearInterval(recordTimerRef.current);
+  }, []);
 
   const send = async () => {
     const text = input.trim();
@@ -46,13 +53,21 @@ export default function ChatbotPanel() {
     }
   };
 
-  const startRecording = async () => {
-    // Barge-in: if the bot is still speaking, cut it off immediately so
-    // the user isn't talking over their own assistant.
-    if (audioPlayerRef.current && !audioPlayerRef.current.paused) {
+  const stopSpeaking = () => {
+    if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
       audioPlayerRef.current.currentTime = 0;
     }
+    setIsSpeaking(false);
+  };
+
+  const startRecording = async () => {
+    // If the bot happens to still be speaking when the user chooses to
+    // record instead, cut it off — but pressing mic while speaking is now
+    // handled as "just stop speaking" (see micClick), so this is mostly a
+    // safety net for edge cases (e.g. speaking ends a split second after
+    // the click registers).
+    stopSpeaking();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -72,12 +87,30 @@ export default function ChatbotPanel() {
 
       recorder.start();
       setIsRecording(true);
+      recordStartRef.current = Date.now();
+      setRecordSeconds(0);
+      recordTimerRef.current = setInterval(() => {
+        setRecordSeconds(Math.floor((Date.now() - recordStartRef.current) / 1000));
+      }, 250);
     } catch (err) {
       setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't access microphone: ${err.message}` }]);
     }
   };
 
+  const MIN_RECORDING_MS = 800; // guards against an accidental instant click producing a near-silent clip
+
   const stopRecording = () => {
+    clearInterval(recordTimerRef.current);
+    const elapsed = Date.now() - recordStartRef.current;
+    if (elapsed < MIN_RECORDING_MS) {
+      // Let it keep recording a little longer rather than send a clip so
+      // short Whisper is likely to mistranscribe it as filler noise.
+      setTimeout(() => {
+        mediaRecorderRef.current?.stop();
+        setIsRecording(false);
+      }, MIN_RECORDING_MS - elapsed);
+      return;
+    }
     mediaRecorderRef.current?.stop();
     setIsRecording(false);
   };
@@ -121,6 +154,20 @@ export default function ChatbotPanel() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       send();
+    }
+  };
+
+  // Three-way mic button, matching how ChatGPT's voice mode behaves:
+  // - Bot is speaking → just stop the speech (don't start recording)
+  // - Currently recording → stop recording and send it
+  // - Otherwise → start recording
+  const micClick = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
   };
 
@@ -195,22 +242,28 @@ export default function ChatbotPanel() {
           )}
         </div>
 
-        <audio ref={audioPlayerRef} style={{ display: "none" }} />
+        <audio
+          ref={audioPlayerRef}
+          style={{ display: "none" }}
+          onPlay={() => setIsSpeaking(true)}
+          onPause={() => setIsSpeaking(false)}
+          onEnded={() => setIsSpeaking(false)}
+        />
 
         <div style={{ display: "flex", gap: 8 }}>
           <button
             style={{
               ...S.btnSecondary,
               padding: "9px 14px",
-              borderColor: isRecording ? COLORS.red : S.btnSecondary.border,
-              color: isRecording ? COLORS.red : S.btnSecondary.color,
-              background: isRecording ? COLORS.redSoftBg : S.btnSecondary.background,
+              borderColor: isRecording || isSpeaking ? COLORS.red : S.btnSecondary.border,
+              color: isRecording || isSpeaking ? COLORS.red : S.btnSecondary.color,
+              background: isRecording || isSpeaking ? COLORS.redSoftBg : S.btnSecondary.background,
             }}
-            onClick={isRecording ? stopRecording : startRecording}
+            onClick={micClick}
             disabled={sending || voiceBusy}
-            title={isRecording ? "Stop recording" : "Speak your question"}
+            title={isSpeaking ? "Stop GlamourBot speaking" : isRecording ? "Stop recording" : "Speak your question"}
           >
-            {isRecording ? "⏹ Stop" : "🎤"}
+            {isSpeaking ? "⏸ Stop" : isRecording ? `⏹ ${recordSeconds}s` : "🎤"}
           </button>
           <input
             style={{ ...S.input, flex: 1 }}
