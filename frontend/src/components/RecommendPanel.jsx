@@ -4,7 +4,7 @@ import { API_BASE, S, COLORS } from "../styles.js";
 const CATEGORIES = ["", "dress", "shirt", "kurta", "bag", "shoes", "jewelry", "sunglasses"];
 const COLOR_OPTIONS = ["", "red", "pink", "blue", "green", "black", "white", "gold", "silver", "maroon", "navy", "mustard", "mint"];
 
-export default function RecommendPanel() {
+export default function RecommendPanel({ onTryOn }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [color, setColor] = useState("");
@@ -12,6 +12,45 @@ export default function RecommendPanel() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [tryingOnIndex, setTryingOnIndex] = useState(null);
+
+  // Maps a product's free-text category word to the Try-On catalog's
+  // three body-placement categories, so a "Try On" click files it in the
+  // right place without asking the user anything extra.
+  const inferTryOnCategory = (product) => {
+    const text = `${product.title} ${product.brand}`.toLowerCase();
+    if (/\b(shoe|shoes|heel|heels|sandal|sneaker|slipper|khussa)\b/.test(text)) return "lower"; // footwear has no dedicated slot; closest existing bucket
+    if (/\b(shirt|top|kurti|blouse|kameez)\b/.test(text)) return "upper";
+    if (/\b(trouser|pant|jeans|palazzo|shalwar|skirt)\b/.test(text)) return "lower";
+    return "full"; // dresses, suits, kaftans, sets, and anything unrecognized
+  };
+
+  const handleTryOn = async (product, index) => {
+    setTryingOnIndex(index);
+    try {
+      const res = await fetch(`${API_BASE}/catalog/from-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_url: product.image_url,
+          name: product.title,
+          brand: product.brand || "",
+          category: inferTryOnCategory(product),
+          tags: product.colors || [],
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || res.statusText);
+      }
+      const garment = await res.json();
+      onTryOn?.(garment);
+    } catch (err) {
+      setError(`Couldn't add "${product.title}" to Try-On: ${err.message}`);
+    } finally {
+      setTryingOnIndex(null);
+    }
+  };
 
   const search = async () => {
     if (!query.trim() && !category && !color) {
@@ -122,45 +161,63 @@ export default function RecommendPanel() {
             }}
           >
             {result.products.map((p, i) => (
-              <a
+              <div
                 key={i}
-                href={p.url}
-                target="_blank"
-                rel="noreferrer"
                 style={{
                   ...S.card,
                   padding: 0,
                   overflow: "hidden",
-                  textDecoration: "none",
-                  color: "inherit",
                 }}
               >
-                <div
-                  style={{
-                    height: 160,
-                    background: COLORS.surfaceAlt,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ textDecoration: "none", color: "inherit", display: "block" }}
                 >
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  ) : (
-                    <span style={{ fontSize: 32 }}>👗</span>
-                  )}
+                  <div
+                    style={{
+                      height: 160,
+                      background: COLORS.surfaceAlt,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <span style={{ fontSize: 32 }}>👗</span>
+                    )}
+                  </div>
+                  <div style={{ padding: "12px 14px 8px" }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{p.title}</p>
+                    <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.textSecondary }}>{p.brand}</p>
+                    {p.colors?.length > 0 && (
+                      <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.accent }}>
+                        {p.colors.join(" / ")} {p.colors_confirmed ? "" : "(approx.)"}
+                      </p>
+                    )}
+                    {p.price && <p style={{ margin: 0, fontSize: 13, color: COLORS.green }}>PKR {p.price}</p>}
+                  </div>
+                </a>
+                <div style={{ padding: "0 14px 14px" }}>
+                  <button
+                    style={{
+                      ...S.btnPrimary,
+                      width: "100%",
+                      padding: "8px 0",
+                      fontSize: 12,
+                      opacity: tryingOnIndex === i ? 0.6 : 1,
+                    }}
+                    onClick={() => handleTryOn(p, i)}
+                    disabled={tryingOnIndex === i || !p.image_url}
+                    title={!p.image_url ? "No product photo available to try on" : undefined}
+                  >
+                    {tryingOnIndex === i ? "Adding…" : "✦ Try On"}
+                  </button>
                 </div>
-                <div style={{ padding: "12px 14px" }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{p.title}</p>
-                  <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.textSecondary }}>{p.brand}</p>
-                  {p.colors?.length > 0 && (
-                    <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.accent }}>
-                      {p.colors.join(" / ")} {p.colors_confirmed ? "" : "(approx.)"}
-                    </p>
-                  )}
-                  {p.price && <p style={{ margin: 0, fontSize: 13, color: COLORS.green }}>PKR {p.price}</p>}
-                </div>
-              </a>
+              </div>
             ))}
           </div>
         </>

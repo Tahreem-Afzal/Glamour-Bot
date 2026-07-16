@@ -8,7 +8,7 @@ const CATEGORY_COLORS = {
 };
 const CAT_ICON = { upper: "👕", lower: "👖", full: "👗" };
 
-export default function TryOnPanel() {
+export default function TryOnPanel({ pendingGarment, onConsumePending }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -45,6 +45,17 @@ export default function TryOnPanel() {
   useEffect(() => {
     fetchGarments();
   }, [fetchGarments]);
+
+  // A garment added via Recommendations' "Try On" button arrives here —
+  // select it, make sure it's in the loaded catalog list, land on the
+  // Try-On sub-tab, and clear the pending flag so this only fires once.
+  useEffect(() => {
+    if (!pendingGarment) return;
+    setGarments((prev) => (prev.some((g) => g.id === pendingGarment.id) ? prev : [...prev, pendingGarment]));
+    setSelected(pendingGarment);
+    setSubTab("tryon");
+    onConsumePending?.();
+  }, [pendingGarment, onConsumePending]);
 
   const startCamera = useCallback(async () => {
     try {

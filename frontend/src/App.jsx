@@ -15,6 +15,10 @@ const TABS = [
 export default function App() {
   const [tab, setTab] = useState("chatbot");
   const [health, setHealth] = useState(null);
+  // Set by RecommendPanel's "Try On" button, consumed by TryOnPanel — lets a
+  // product from Recommendations land pre-selected in the Try-On catalog
+  // without the user having to manually re-find/upload it.
+  const [pendingTryOnGarment, setPendingTryOnGarment] = useState(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/health`)
@@ -58,9 +62,21 @@ export default function App() {
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         {tab === "chatbot" && <ChatbotPanel />}
-        {tab === "recommend" && <RecommendPanel />}
+        {tab === "recommend" && (
+          <RecommendPanel
+            onTryOn={(garment) => {
+              setPendingTryOnGarment(garment);
+              setTab("tryon");
+            }}
+          />
+        )}
         {tab === "imagegen" && <ImageGenPanel />}
-        {tab === "tryon" && <TryOnPanel />}
+        {tab === "tryon" && (
+          <TryOnPanel
+            pendingGarment={pendingTryOnGarment}
+            onConsumePending={() => setPendingTryOnGarment(null)}
+          />
+        )}
       </div>
     </div>
   );
