@@ -16,6 +16,7 @@ import uuid
 import logging
 from typing import Optional, List
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -112,6 +113,51 @@ async def create_garment(
         image_path=f"garment_images/{safe_name}",  # relative — portable
         thumbnail_url=f"/garments/{safe_name}",
         tags=tag_list,
+    )
+    db.add(garment)
+    db.commit()
+    db.refresh(garment)
+    return garment
+
+
+class AddFromUrlRequest(BaseModel):
+    image_url: str
+    name: str
+    brand: str = ""
+    category: str = "full"
+    tags: List[str] = []
+
+
+@router.post("/from-url", response_model=GarmentOut)
+def create_garment_from_url(req: AddFromUrlRequest, db: Session = Depends(get_db)):
+    """Downloads a product photo server-side and adds it to the garment
+    catalog in one step — this is what powers the "Try On" button on
+    Recommendation results, so the user never has to manually save and
+    re-upload a product image just to try it on."""
+    os.makedirs(GARMENT_DIR, exist_ok=True)
+
+    try:
+        resp = httpx.get(req.image_url, timeout=15, follow_redirects=True)
+        resp.raise_for_status()
+    except httpx.HTTPError as e:
+        raise HTTPException(400, f"Could not download product image: {e}")
+
+    try:
+        img = Image.open(io.BytesIO(resp.content)).convert("RGB")
+    except Exception:
+        raise HTTPException(400, "Downloaded file is not a valid image")
+
+    safe_name = f"{uuid.uuid4().hex}.jpg"
+    file_path = os.path.join(GARMENT_DIR, safe_name)
+    img.save(file_path, "JPEG", quality=90)
+
+    garment = Garment(
+        name=req.name,
+        brand=req.brand,
+        category=req.category,
+        image_path=f"garment_images/{safe_name}",
+        thumbnail_url=f"/garments/{safe_name}",
+        tags=req.tags,
     )
     db.add(garment)
     db.commit()
