@@ -1,4 +1,4 @@
-# GlamourAI — Unified Fashion Assistant Suite
+# Glamour-Bot — Unified Fashion Assistant Suite
 
 One project, one backend, one frontend, four modes: **Chatbot**,
 **Recommendations**, **Image Generation**, **Try-On**.
