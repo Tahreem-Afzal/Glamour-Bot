@@ -3,20 +3,31 @@ import json
 import pickle
 import numpy as np
 import faiss
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 
 BASE_DIR   = os.path.join(os.path.dirname(__file__), "..")
 DB_DIR     = os.path.join(BASE_DIR, "vector_db")
 INDEX_FILE = os.path.join(DB_DIR, "index.bin")
 DOCS_FILE  = os.path.join(DB_DIR, "docs.pkl")
 
-MODEL_NAME = "all-MiniLM-L6-v2"
+# Same model as before (all-MiniLM-L6-v2), but run through fastembed's ONNX
+# runtime instead of sentence-transformers/torch. This avoids pulling in
+# torch (~700MB+ and a large runtime footprint) which was causing the
+# service to run out of memory on Render's 512MB free/starter instances.
+# Embeddings from this model are still 384-dim and L2-normalized, so the
+# existing FAISS index format and search logic are unaffected.
+MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 DIM        = 384
+
+_model_singleton = None
 
 
 def get_model():
-    print("Loading embedding model...")
-    return SentenceTransformer(MODEL_NAME)
+    global _model_singleton
+    if _model_singleton is None:
+        print("Loading embedding model (fastembed, no torch)...")
+        _model_singleton = TextEmbedding(model_name=MODEL_NAME)
+    return _model_singleton
 
 
 def _normalize(vectors: np.ndarray) -> np.ndarray:
@@ -32,8 +43,7 @@ def build_vectorstore(docs: list[dict]):
 
     contents = [d["content"] for d in docs]
     print(f"Creating embeddings for {len(contents)} documents...")
-    embeddings = model.encode(contents, show_progress_bar=True, batch_size=64)
-    embeddings = np.array(embeddings, dtype=np.float32)
+    embeddings = np.array(list(model.embed(contents, batch_size=64)), dtype=np.float32)
     embeddings = _normalize(embeddings)
 
     index = faiss.IndexFlatIP(DIM)
@@ -62,7 +72,7 @@ def load_vectorstore():
 
 def search(index, docs: list[dict], query: str, n_results: int = 5) -> list[str]:
     model = get_model()
-    query_embedding = model.encode([query], convert_to_numpy=True).astype(np.float32)
+    query_embedding = np.array(list(model.embed([query])), dtype=np.float32)
     query_embedding = _normalize(query_embedding)
 
     _, labels = index.search(query_embedding, n_results)

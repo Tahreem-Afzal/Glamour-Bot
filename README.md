@@ -1,4 +1,4 @@
-# Glamour-Bot — Unified Fashion Assistant Suite
+# GlamourAI — Unified Fashion Assistant Suite
 
 One project, one backend, one frontend, four modes: **Chatbot**,
 **Recommendations**, **Image Generation**, **Try-On**.
@@ -130,9 +130,9 @@ source venv/bin/activate     # Mac/Linux
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
-⚠️ This install is heavier than the try-on-only backend was —
-`sentence-transformers` pulls in `torch` for the chatbot's embedding
-search. Expect several minutes, similar to your first try-on install.
+This installs `fastembed` (a lightweight ONNX-based embedding runtime)
+for the chatbot's search — no `torch` required, so this stays fast and
+fits comfortably in low-memory environments like Render's free tier.
 
 Terminal 2:
 ```bash
@@ -168,19 +168,13 @@ Render can create them together.
 4. `FRONTEND_URL` (backend's CORS allowlist) and `VITE_API_BASE`
    (frontend's API target) are wired automatically between the two
    services — no manual URL copying needed.
-5. Deploy. First backend build is slow (`torch` + `sentence-transformers`).
+5. Deploy.
 
 **Two things to know:**
-- The backend plan is currently set to `free` in `render.yaml`. That
-  tier gives 512MB RAM, and `torch` + `sentence-transformers` loading
-  the embedding model at startup **may crash it (OOM)** — free tier
-  simply may not have enough headroom for this dependency. Deploy and
-  check the logs; if you see the service repeatedly restarting or a
-  "Ran out of memory" message, you have two options:
-  1. Switch `plan: free` → `plan: starter` in `render.yaml` (~$7/mo) — guaranteed to fit.
-  2. Ask for the embeddings API rewrite — swaps the local `torch`/`sentence-transformers`
-     model for a hosted embeddings API call, which fits comfortably in free-tier RAM but
-     requires a real code change (not just a config edit).
+- The chatbot's embedding search runs on `fastembed` (ONNX-based, no
+  `torch`), specifically so it fits within Render's 512MB free/starter
+  RAM. If you ever swap in a different embedding model, re-check its
+  memory footprint before deploying.
 - `tryon.db` and `garment_images/`/`uploads/` live on the backend's local
   disk, which Render wipes on every redeploy. Fine for a demo; add a
   persistent Disk (or move to Postgres/S3) if catalog uploads need to

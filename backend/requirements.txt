@@ -17,11 +17,11 @@ requests
 python-docx
 pypdf
 
-# Chatbot: vector search (NOTE: sentence-transformers pulls in torch --
-# this install is heavier/slower than the try-on-only backend was.
-# There is no lighter substitute without rewriting the RAG retrieval
-# approach entirely.)
-sentence-transformers
+# Chatbot: vector search — fastembed runs the same all-MiniLM-L6-v2 model
+# via ONNX Runtime instead of sentence-transformers/torch. This fits
+# comfortably in Render's 512MB free/starter RAM limit, unlike torch which
+# was causing out-of-memory crashes on deploy.
+fastembed
 faiss-cpu
 numpy
 
