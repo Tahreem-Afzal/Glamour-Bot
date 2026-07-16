@@ -20,6 +20,10 @@ export default function App() {
   // product from Recommendations land pre-selected in the Try-On catalog
   // without the user having to manually re-find/upload it.
   const [pendingTryOnGarment, setPendingTryOnGarment] = useState(null);
+  // Set when the user checks a future date in the Weather widget's "Plan
+  // Ahead" tab — Chatbot and Recommendations both pick this up so advice
+  // is based on that day's forecast instead of silently using today's.
+  const [plannedEvent, setPlannedEvent] = useState(null); // { city, date } | null
 
   useEffect(() => {
     fetch(`${API_BASE}/health`)
@@ -56,7 +60,7 @@ export default function App() {
           ))}
         </nav>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <WeatherWidget />
+          <WeatherWidget plannedEvent={plannedEvent} onPlanChange={setPlannedEvent} />
           <div style={S.statusPill}>
             <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
             <span>{statusText}</span>
@@ -65,9 +69,11 @@ export default function App() {
       </header>
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {tab === "chatbot" && <ChatbotPanel />}
+        {tab === "chatbot" && <ChatbotPanel plannedEvent={plannedEvent} onClearPlan={() => setPlannedEvent(null)} />}
         {tab === "recommend" && (
           <RecommendPanel
+            plannedEvent={plannedEvent}
+            onClearPlan={() => setPlannedEvent(null)}
             onTryOn={(garment) => {
               setPendingTryOnGarment(garment);
               setTab("tryon");

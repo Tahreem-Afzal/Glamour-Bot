@@ -51,6 +51,7 @@ def init_chat_state():
 class ChatRequest(BaseModel):
     message: str
     city: Optional[str] = None
+    event_date: Optional[str] = None  # YYYY-MM-DD — set when the user is planning an event ahead of time
 
 
 class ChatResponse(BaseModel):
@@ -60,12 +61,12 @@ class ChatResponse(BaseModel):
 @router.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     response = run_chat(_state["rag_client"], _state["index"], _state["docs"],
-                         request.message, city=request.city)
+                         request.message, city=request.city, event_date=request.event_date)
     return ChatResponse(response=response)
 
 
 @router.post("/voice/input")
-async def voice_input(audio: UploadFile = File(...), city: Optional[str] = None):
+async def voice_input(audio: UploadFile = File(...), city: Optional[str] = None, event_date: Optional[str] = None):
     audio_bytes = await audio.read()
     filename = audio.filename or "audio.webm"
     if not filename.endswith(('.webm', '.mp3', '.wav', '.m4a', '.ogg')):
@@ -93,7 +94,7 @@ async def voice_input(audio: UploadFile = File(...), city: Optional[str] = None)
             headers={"X-Transcript": quote("(unclear audio)"), "X-Response": quote(retry_msg)},
         )
 
-    answer = run_chat(_state["rag_client"], _state["index"], _state["docs"], user_text, city=city)
+    answer = run_chat(_state["rag_client"], _state["index"], _state["docs"], user_text, city=city, event_date=event_date)
     audio_response = text_to_speech(answer)
 
     return Response(

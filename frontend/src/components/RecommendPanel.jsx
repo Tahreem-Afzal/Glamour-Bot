@@ -4,10 +4,11 @@ import { API_BASE, S, COLORS } from "../styles.js";
 const CATEGORIES = ["", "dress", "shirt", "kurta", "bag", "shoes", "jewelry", "sunglasses"];
 const COLOR_OPTIONS = ["", "red", "pink", "blue", "green", "black", "white", "gold", "silver", "maroon", "navy", "mustard", "mint"];
 
-export default function RecommendPanel({ onTryOn }) {
+export default function RecommendPanel({ onTryOn, plannedEvent, onClearPlan }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [color, setColor] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -53,8 +54,8 @@ export default function RecommendPanel({ onTryOn }) {
   };
 
   const search = async () => {
-    if (!query.trim() && !category && !color) {
-      setError("Type a query or pick a category/color first.");
+    if (!query.trim() && !category && !color && !maxPrice) {
+      setError("Type a query or pick a category/color/budget first.");
       return;
     }
     setLoading(true);
@@ -68,7 +69,9 @@ export default function RecommendPanel({ onTryOn }) {
           query: query.trim() || "outfit",
           category: category || null,
           color: color || null,
-          city: city || null,
+          max_price: maxPrice ? Number(maxPrice) : null,
+          city: plannedEvent?.city || city || null,
+          event_date: plannedEvent?.date || null,
           max_results: 8,
         }),
       });
@@ -96,7 +99,7 @@ export default function RecommendPanel({ onTryOn }) {
             placeholder="e.g. formal red heels for an engagement"
           />
         </div>
-        <div style={S.formGrid}>
+        <div style={{ ...S.formGrid, gridTemplateColumns: "1fr 1fr 1fr" }}>
           <div style={S.formGroup}>
             <label style={S.label}>CATEGORY (optional)</label>
             <select style={S.input} value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -117,11 +120,47 @@ export default function RecommendPanel({ onTryOn }) {
               ))}
             </select>
           </div>
+          <div style={S.formGroup}>
+            <label style={S.label}>MAX BUDGET (PKR, optional)</label>
+            <input
+              type="number"
+              min="0"
+              style={S.input}
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              placeholder="e.g. 12000"
+            />
+          </div>
         </div>
         <div style={S.formGroup}>
           <label style={S.label}>CITY (optional — enables weather-aware fabric suggestions)</label>
-          <input style={S.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Lahore" />
+          <input
+            style={S.input}
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="e.g. Lahore"
+            disabled={!!plannedEvent}
+          />
         </div>
+
+        {plannedEvent && (
+          <div
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              background: COLORS.accentSoftBg, border: `1px solid ${COLORS.accent}`,
+              borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent,
+            }}
+          >
+            <span>📅 Planning for {plannedEvent.date} in {plannedEvent.city} — results use that day's forecast.</span>
+            <button
+              onClick={onClearPlan}
+              style={{ background: "none", border: "none", color: COLORS.accent, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}
+            >
+              Use today instead
+            </button>
+          </div>
+        )}
+
         <button
           style={{ ...S.btnPrimary, alignSelf: "flex-start", opacity: loading ? 0.6 : 1 }}
           onClick={search}

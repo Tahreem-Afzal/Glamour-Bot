@@ -559,7 +559,7 @@ class BrandRecommender:
         self._products = all_products
         logger.info(f"[BrandRecommender] synced {len(all_products)} products across {len(self.brand_domains)} brands")
 
-    def recommend(self, query: str, max_results: int = 6, city: str = None) -> dict:
+    def recommend(self, query: str, max_results: int = 6, city: str = None, event_date: str = None) -> dict:
         if not self._products:
             return {"has_results": False, "brands": [], "query": query, "reason": "no_products_cached"}
 
@@ -581,8 +581,16 @@ class BrandRecommender:
         fabric_hint = {"prefer_fabrics": [], "avoid_fabrics": []}
         if city:
             try:
-                from services.weather import get_weather, weather_to_fabric_hint
-                fabric_hint = weather_to_fabric_hint(get_weather(city))
+                if event_date:
+                    # Planning ahead: use the predicted weather for that
+                    # future date instead of today's — this is what
+                    # actually makes the "Plan Ahead" weather widget do
+                    # something beyond just displaying a forecast.
+                    from services.weather import get_forecast, forecast_to_fabric_hint
+                    fabric_hint = forecast_to_fabric_hint(get_forecast(city, event_date))
+                else:
+                    from services.weather import get_weather, weather_to_fabric_hint
+                    fabric_hint = weather_to_fabric_hint(get_weather(city))
             except Exception as e:
                 logger.info(f"[BrandRecommender] weather lookup skipped: {e}")
 

@@ -40,7 +40,7 @@ function maxPlannableDateISO() {
   return d.toISOString().split("T")[0];
 }
 
-export default function WeatherWidget() {
+export default function WeatherWidget({ plannedEvent, onPlanChange }) {
   const [mode, setMode] = useState("today"); // "today" | "plan"
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
@@ -73,6 +73,7 @@ export default function WeatherWidget() {
       .then((data) => {
         if (!data.ok) throw new Error(data.reason || "not ok");
         setForecast(data);
+        onPlanChange?.({ city: data.city, date: data.date });
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
@@ -106,13 +107,14 @@ export default function WeatherWidget() {
           gap: 6,
           fontSize: 12,
           color: COLORS.textSecondary,
-          background: COLORS.surfaceAlt,
-          border: `1px solid ${COLORS.border}`,
+          background: plannedEvent ? COLORS.accentSoftBg : COLORS.surfaceAlt,
+          border: `1px solid ${plannedEvent ? COLORS.accent : COLORS.border}`,
           padding: "4px 10px",
           borderRadius: 20,
           cursor: "pointer",
         }}
       >
+        {plannedEvent && <span title={`Planning ahead for ${plannedEvent.date} in ${plannedEvent.city}`}>📅</span>}
         {loading && mode === "today" ? (
           <span>🌡️ …</span>
         ) : error || !weather ? (
@@ -264,9 +266,25 @@ export default function WeatherWidget() {
                     {forecast.condition}
                   </p>
                   {forecast.fabric_hint?.note && (
-                    <p style={{ margin: 0, fontSize: 11, color: COLORS.textMuted, fontStyle: "italic" }}>
+                    <p style={{ margin: "0 0 10px", fontSize: 11, color: COLORS.textMuted, fontStyle: "italic" }}>
                       {forecast.fabric_hint.note}
                     </p>
+                  )}
+                  {plannedEvent && (
+                    <>
+                      <p style={{ margin: "0 0 6px", fontSize: 11, color: COLORS.accent }}>
+                        ✓ Active — Chatbot and Recommendations will use this forecast instead of today's weather.
+                      </p>
+                      <button
+                        onClick={() => onPlanChange?.(null)}
+                        style={{
+                          background: "none", border: `1px solid ${COLORS.border}`, color: COLORS.textSecondary,
+                          padding: "5px 0", width: "100%", borderRadius: 6, fontSize: 11, cursor: "pointer",
+                        }}
+                      >
+                        Clear plan, use today instead
+                      </button>
+                    </>
                   )}
                 </div>
               )}

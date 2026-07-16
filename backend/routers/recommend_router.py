@@ -33,7 +33,9 @@ class RecommendRequest(BaseModel):
     query: str                 # free text, e.g. "red heels for a party"
     category: Optional[str] = None   # optional explicit filter, e.g. "shoes"
     color: Optional[str] = None      # optional explicit filter, e.g. "red"
+    max_price: Optional[float] = None  # optional budget ceiling in PKR
     city: Optional[str] = None       # for weather-aware fabric suggestions
+    event_date: Optional[str] = None # YYYY-MM-DD — plan for a future event's forecast instead of today's weather
     max_results: int = 6
 
 
@@ -60,14 +62,19 @@ def recommend(req: RecommendRequest):
 
     # Explicit category/color filters (from dropdowns in the UI) are just
     # appended to the query text — brands.py's own vocabulary expansion
-    # and color matching already handles this correctly either way.
+    # and color matching already handles this correctly either way. Same
+    # trick for max_price: brands.py already parses "under pkr X" out of
+    # free text (see _extract_max_price), so reuse that instead of
+    # duplicating budget-filtering logic here.
     full_query = req.query
     if req.category:
         full_query += f" {req.category}"
     if req.color:
         full_query += f" {req.color}"
+    if req.max_price:
+        full_query += f" under pkr {req.max_price}"
 
-    result = recommender.recommend(full_query, max_results=req.max_results, city=req.city)
+    result = recommender.recommend(full_query, max_results=req.max_results, city=req.city, event_date=req.event_date)
 
     if not result.get("has_results"):
         return RecommendResponse(

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
 
-export default function ChatbotPanel() {
+export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   const [messages, setMessages] = useState([
     { role: "bot", text: "Hi! I'm GlamourBot — ask me about outfits, occasions, or fashion advice. You can write in English or Roman Urdu." },
   ]);
@@ -41,7 +41,11 @@ export default function ChatbotPanel() {
       const res = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, city: city || null }),
+        body: JSON.stringify({
+          message: text,
+          city: plannedEvent?.city || city || null,
+          event_date: plannedEvent?.date || null,
+        }),
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
@@ -121,7 +125,11 @@ export default function ChatbotPanel() {
       const formData = new FormData();
       formData.append("audio", blob, "recording.webm");
 
-      const url = `${API_BASE}/voice/input${city ? `?city=${encodeURIComponent(city)}` : ""}`;
+      const effectiveCity = plannedEvent?.city || city;
+      const params = new URLSearchParams();
+      if (effectiveCity) params.set("city", effectiveCity);
+      if (plannedEvent?.date) params.set("event_date", plannedEvent.date);
+      const url = `${API_BASE}/voice/input${params.toString() ? `?${params.toString()}` : ""}`;
       const res = await fetch(url, { method: "POST", body: formData });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
 
@@ -202,8 +210,27 @@ export default function ChatbotPanel() {
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="e.g. Lahore"
+            disabled={!!plannedEvent}
           />
         </div>
+
+        {plannedEvent && (
+          <div
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              background: COLORS.accentSoftBg, border: `1px solid ${COLORS.accent}`,
+              borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent,
+            }}
+          >
+            <span>📅 Planning for {plannedEvent.date} in {plannedEvent.city} — advice uses that day's forecast.</span>
+            <button
+              onClick={onClearPlan}
+              style={{ background: "none", border: "none", color: COLORS.accent, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}
+            >
+              Use today instead
+            </button>
+          </div>
+        )}
 
         <div
           ref={scrollRef}
