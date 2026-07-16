@@ -493,6 +493,38 @@ class ShopifyFetcher:
         return products[:limit]
 
 
+_PRICE_UNDER_PATTERNS = [
+    r"(?:under|below|less\s*than|se\s*kam|tak)\s*(?:pkr|rs\.?|rupees)?\s*([\d,]+)",
+    r"([\d,]+)\s*(?:pkr|rs\.?|rupees)?\s*(?:se\s*kam|or\s*less|and\s*below)",
+    r"(?:budget|max)\s*(?:of|is|:)?\s*(?:pkr|rs\.?|rupees)?\s*([\d,]+)",
+]
+
+
+def _extract_max_price(query_lower: str) -> Optional[float]:
+    """Pulls a budget ceiling out of free text like 'under pkr 12000',
+    'below rs 5000', 'budget 8000'. Returns None if no budget was stated."""
+    for pattern in _PRICE_UNDER_PATTERNS:
+        m = re.search(pattern, query_lower)
+        if m:
+            digits = m.group(1).replace(",", "")
+            try:
+                return float(digits)
+            except ValueError:
+                continue
+    return None
+
+
+def _product_price_value(product) -> Optional[float]:
+    """Parses a product's stored price string (plain Shopify numeric
+    string like '25990.00') into a float. Returns None if missing/unparseable."""
+    if not product.price:
+        return None
+    try:
+        return float(str(product.price).replace(",", "").strip())
+    except ValueError:
+        return None
+
+
 class BrandRecommender:
     def __init__(self, auto_sync: bool = True, brand_domains: list[str] = None,
                  cache_ttl_hours: int = 12):
@@ -556,8 +588,19 @@ class BrandRecommender:
 
         requested_categories = [c for c in CATEGORY_EXPANSION if c in norm_words]
         wanted_category_words = set()
-        for c in requested_categories:
-            wanted_category_words.update(CATEGORY_EXPANSION[c])
+        if requested_categories:
+            # Use the MOST SPECIFIC category named (the one with the
+            # smallest/narrowest vocabulary), not the union of all of them.
+            # Bug this fixes: the UI's category dropdown appends a broad
+            # word like "shoes" onto a query that already said "heels" —
+            # unioning both vocabularies let plain sneakers/slippers back
+            # in, since they satisfy the broad "shoes" set even though
+            # they don't satisfy "heels". Picking the narrowest category
+            # keeps the user's more specific, explicit intent authoritative.
+            narrowest = min(requested_categories, key=lambda c: len(CATEGORY_EXPANSION[c]))
+            wanted_category_words = set(CATEGORY_EXPANSION[narrowest])
+
+        max_price = _extract_max_price(query_lower)
 
         def _text_of(product) -> str:
             return f"{product.title} {product.product_type} {' '.join(product.tags)}".lower()
@@ -596,7 +639,17 @@ class BrandRecommender:
         # scoring bonus — a product missing any named requirement is
         # excluded outright, so the links returned only ever point to
         # products that actually match everything asked for.
-        def _eligible(relax_category=False, relax_color=False, relax_attrs=False):
+        def _matches_budget(product) -> bool:
+            if max_price is None:
+                return True
+            price_value = _product_price_value(product)
+            if price_value is None:
+                # Unknown price + a stated budget: exclude rather than risk
+                # showing something that could be well over what was asked.
+                return False
+            return price_value <= max_price
+
+        def _eligible(relax_category=False, relax_color=False, relax_attrs=False, relax_budget=False):
             out = []
             for p in self._products:
                 if not relax_category and not _matches_requested_category(p):
@@ -604,6 +657,8 @@ class BrandRecommender:
                 if not relax_color and not _matches_requested_color(p):
                     continue
                 if not relax_attrs and attrs_found and not _product_matches_attributes(p, attrs_found):
+                    continue
+                if not relax_budget and max_price is not None and not _matches_budget(p):
                     continue
                 if not _matches_gender_and_kids(p):
                     continue
@@ -629,6 +684,12 @@ class BrandRecommender:
                     "has_results": False, "brands": [], "query": query,
                     "reason": "no_exact_color_match",
                     "requested_colors": sorted(colors_found),
+                }
+            if max_price is not None and _eligible(relax_budget=True):
+                return {
+                    "has_results": False, "brands": [], "query": query,
+                    "reason": "no_budget_match",
+                    "requested_max_price": max_price,
                 }
             if requested_categories and _eligible(relax_category=True):
                 return {
@@ -698,6 +759,12 @@ class BrandRecommender:
                 return (
                     f"I couldn't find anything matching **{attrs}** specifically for that request in the "
                     f"brands I currently track — want me to see similar styles without that detail instead?"
+                )
+            if reason == "no_budget_match":
+                budget = result.get("requested_max_price")
+                return (
+                    f"I couldn't find anything matching that request under **PKR {budget:,.0f}** in the "
+                    f"brands I currently track — want me to show the closest options slightly above that budget instead?"
                 )
             if reason == "no_category_match":
                 cats = ", ".join(result.get("requested_categories", []))
