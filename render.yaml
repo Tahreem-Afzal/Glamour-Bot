@@ -4,8 +4,9 @@ services:
     name: glamourai-backend
     runtime: python
     rootDir: backend
-    plan: starter          # heavy deps (torch, sentence-transformers) need
-                            # more than the free tier's 512MB RAM — see note below
+    plan: free           # ⚠️ free tier = 512MB RAM; torch + sentence-transformers
+                         # loading the embedding model at startup may OOM-crash.
+                         # See README "Deploying (Render)" section for what to do if it does.
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:

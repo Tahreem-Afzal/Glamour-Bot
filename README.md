@@ -171,8 +171,16 @@ Render can create them together.
 5. Deploy. First backend build is slow (`torch` + `sentence-transformers`).
 
 **Two things to know:**
-- The backend plan is set to `starter` (paid), not free — the free
-  512MB-RAM tier will likely crash loading the embedding model.
+- The backend plan is currently set to `free` in `render.yaml`. That
+  tier gives 512MB RAM, and `torch` + `sentence-transformers` loading
+  the embedding model at startup **may crash it (OOM)** — free tier
+  simply may not have enough headroom for this dependency. Deploy and
+  check the logs; if you see the service repeatedly restarting or a
+  "Ran out of memory" message, you have two options:
+  1. Switch `plan: free` → `plan: starter` in `render.yaml` (~$7/mo) — guaranteed to fit.
+  2. Ask for the embeddings API rewrite — swaps the local `torch`/`sentence-transformers`
+     model for a hosted embeddings API call, which fits comfortably in free-tier RAM but
+     requires a real code change (not just a config edit).
 - `tryon.db` and `garment_images/`/`uploads/` live on the backend's local
   disk, which Render wipes on every redeploy. Fine for a demo; add a
   persistent Disk (or move to Postgres/S3) if catalog uploads need to
