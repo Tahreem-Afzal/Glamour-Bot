@@ -4,6 +4,7 @@ import ChatbotPanel from "./components/ChatbotPanel.jsx";
 import RecommendPanel from "./components/RecommendPanel.jsx";
 import ImageGenPanel from "./components/ImageGenPanel.jsx";
 import TryOnPanel from "./components/TryOnPanel.jsx";
+import WeatherWidget from "./components/WeatherWidget.jsx";
 
 const TABS = [
   ["chatbot", "Chatbot"],
@@ -54,9 +55,12 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div style={S.statusPill}>
-          <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
-          <span>{statusText}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <WeatherWidget />
+          <div style={S.statusPill}>
+            <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
+            <span>{statusText}</span>
+          </div>
         </div>
       </header>
 

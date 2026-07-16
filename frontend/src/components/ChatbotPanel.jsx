@@ -47,6 +47,12 @@ export default function ChatbotPanel() {
   };
 
   const startRecording = async () => {
+    // Barge-in: if the bot is still speaking, cut it off immediately so
+    // the user isn't talking over their own assistant.
+    if (audioPlayerRef.current && !audioPlayerRef.current.paused) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current.currentTime = 0;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;

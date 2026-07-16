@@ -73,13 +73,14 @@ def get_weather(city_name: str = DEFAULT_CITY) -> dict:
             "temp_c": cur.get("temperature_2m"), "feels_like_c": cur.get("apparent_temperature"),
             "humidity_pct": cur.get("relative_humidity_2m"), "wind_kph": cur.get("wind_speed_10m"),
             "condition": condition, "is_rainy": is_rainy, "weather_code": code,
+            "local_time": cur.get("time"),  # ISO 8601, already in the city's own timezone (timezone=auto above)
         }
     except Exception as e:
         print(f"[Weather] Forecast fetch failed for '{city_name}': {e}")
         return {
             "ok": False, "city": city_name, "temp_c": None, "feels_like_c": None,
             "humidity_pct": None, "wind_kph": None, "condition": "unknown",
-            "is_rainy": False, "weather_code": None,
+            "is_rainy": False, "weather_code": None, "local_time": None,
         }
 
 
