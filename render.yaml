@@ -1,0 +1,40 @@
+services:
+  # --- FastAPI backend (chatbot + recommender + image-gen + try-on) ---
+  - type: web
+    name: glamourai-backend
+    runtime: python
+    rootDir: backend
+    plan: starter          # heavy deps (torch, sentence-transformers) need
+                            # more than the free tier's 512MB RAM — see note below
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: FASHN_API_KEY
+        sync: false         # set manually in the Render dashboard
+      - key: STABILITY_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: glamourai-frontend
+          envVarKey: RENDER_EXTERNAL_URL
+
+  # --- Vite/React frontend, served as a static site ---
+  - type: web
+    name: glamourai-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_BASE
+        fromService:
+          type: web
+          name: glamourai-backend
+          envVarKey: RENDER_EXTERNAL_URL
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

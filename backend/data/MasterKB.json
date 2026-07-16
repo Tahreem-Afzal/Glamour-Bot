@@ -1,0 +1,122 @@
+[
+  {
+    "id": "kb-001",
+    "category": "fabric-glossary",
+    "question": "What is jamawar fabric?",
+    "answer_content": "Jamawar is a richly woven fabric, traditionally made with intricate woven patterns (historically in silk), often used for shawls and formal winter wear in South Asian fashion. It has a distinctive heavier drape and ornate look.",
+    "recommended_keywords": ["jamawar", "fabric glossary"],
+    "tags": ["fabric-glossary", "winter"]
+  },
+  {
+    "id": "kb-002",
+    "category": "fabric-glossary",
+    "question": "What is khaddar?",
+    "answer_content": "Khaddar is a coarse, handspun cotton fabric with a slightly textured feel, commonly worn in winter across Pakistan. It's breathable but has more weight than lawn or cambric, making it warmer.",
+    "recommended_keywords": ["khaddar", "fabric glossary"],
+    "tags": ["fabric-glossary", "winter"]
+  },
+  {
+    "id": "kb-003",
+    "category": "fabric-glossary",
+    "question": "What is organza?",
+    "answer_content": "Organza is a thin, crisp, sheer fabric usually made from silk or synthetic fibers, known for holding its shape well. It's commonly used in formal wear, especially for dupattas and layered festive outfits.",
+    "recommended_keywords": ["organza", "fabric glossary"],
+    "tags": ["fabric-glossary"]
+  },
+  {
+    "id": "kb-004",
+    "category": "fabric-glossary",
+    "question": "What is raw silk?",
+    "answer_content": "Raw silk has a slightly textured, matte finish compared to regular silk's smooth sheen. It's a popular choice for structured formal suits and menswear, and drapes with a bit more body than finer silks.",
+    "recommended_keywords": ["raw silk", "fabric glossary"],
+    "tags": ["fabric-glossary"]
+  },
+  {
+    "id": "kb-005",
+    "category": "styling-guide",
+    "question": "How do I dress for an hourglass body type?",
+    "answer_content": "Hourglass body types are generally balanced between shoulders and hips with a defined waist, so fitted or semi-fitted silhouettes that follow the natural waistline tend to work well — wrap styles, belted outfits, and fitted kurtas are common flattering choices.",
+    "recommended_keywords": ["hourglass", "body type", "styling"],
+    "tags": ["styling-guide", "body-type"]
+  },
+  {
+    "id": "kb-006",
+    "category": "styling-guide",
+    "question": "How do I dress for an apple body type?",
+    "answer_content": "For an apple body type, outfits that draw attention to the shoulders, neckline, and legs — like V-necks, A-line kurtas, or empire waistlines — tend to create a balanced silhouette.",
+    "recommended_keywords": ["apple", "body type", "styling"],
+    "tags": ["styling-guide", "body-type"]
+  },
+  {
+    "id": "kb-007",
+    "category": "color-theory",
+    "question": "What is an undertone and how do I find mine?",
+    "answer_content": "Undertone refers to the subtle color beneath your skin's surface — warm (yellow/golden), cool (pink/blue), or neutral. A simple check: if the veins on your wrist look more green, you likely have a warm undertone; if they look more blue/purple, you likely have a cool undertone.",
+    "recommended_keywords": ["undertone", "skin tone", "color theory"],
+    "tags": ["color-theory"]
+  },
+  {
+    "id": "kb-008",
+    "category": "color-theory",
+    "question": "What colors are considered neutral in fashion?",
+    "answer_content": "Common neutral colors include black, white, beige, grey, and navy. These pair easily with almost any other color and are useful as a base for building an outfit around a statement piece.",
+    "recommended_keywords": ["neutral colors", "color theory"],
+    "tags": ["color-theory"]
+  },
+  {
+    "id": "kb-009",
+    "category": "event-guide",
+    "question": "What is the difference between mehndi, baraat, and walima?",
+    "answer_content": "These are the three core events of a typical Pakistani wedding: mehndi is the pre-wedding celebration with music and henna, usually the most colorful/casual of the three; baraat is the main wedding ceremony, typically the most formal and grand; walima is the reception hosted by the groom's family afterward, often elegant but slightly less bold than the baraat.",
+    "recommended_keywords": ["mehndi", "baraat", "walima", "wedding events"],
+    "tags": ["event-guide"]
+  },
+  {
+    "id": "kb-010",
+    "category": "event-guide",
+    "question": "What should men wear to a formal wedding event?",
+    "answer_content": "For formal wedding events, men often wear a sherwani or a well-tailored 2-3 piece suit, sometimes paired with a waistcoat. Fabric choice (raw silk, jamawar, or fine wool) and embroidery detail usually scale with how formal the specific event is.",
+    "recommended_keywords": ["menswear", "wedding", "sherwani"],
+    "tags": ["event-guide", "menswear"]
+  },
+  {
+    "id": "kb-011",
+    "category": "care-guide",
+    "question": "How do I take care of embroidered fabric?",
+    "answer_content": "Embroidered fabrics generally do best with dry cleaning or gentle hand-washing in cold water, avoiding wringing the fabric (which can pull at embroidery threads). Store folded rather than hung when possible to avoid stress on embellished areas.",
+    "recommended_keywords": ["fabric care", "embroidery", "washing"],
+    "tags": ["care-guide"]
+  },
+  {
+    "id": "kb-012",
+    "category": "care-guide",
+    "question": "How do I store silk garments?",
+    "answer_content": "Silk garments are best stored in a cool, dry place away from direct sunlight, ideally in a breathable garment bag rather than plastic, which can trap moisture and cause damage over time.",
+    "recommended_keywords": ["silk", "storage", "care"],
+    "tags": ["care-guide"]
+  },
+  {
+    "id": "kb-013",
+    "category": "trend-guide",
+    "question": "What is a co-ord set?",
+    "answer_content": "A co-ord set (short for 'coordinated set') is a matching top and bottom sold and worn together, designed as a single cohesive outfit rather than separately styled pieces.",
+    "recommended_keywords": ["co-ord", "coordinated set", "trend"],
+    "tags": ["trend-guide"]
+  },
+  {
+    "id": "kb-014",
+    "category": "trend-guide",
+    "question": "What is a kurti?",
+    "answer_content": "A kurti is a shorter version of a kurta, typically falling around hip length, and is a popular casual/semi-formal top often paired with trousers, jeans, or a shalwar.",
+    "recommended_keywords": ["kurti", "kurta", "trend"],
+    "tags": ["trend-guide"]
+  },
+  {
+    "id": "kb-015",
+    "category": "trend-guide",
+    "question": "What is a pishwas?",
+    "answer_content": "A pishwas is a flowy, floor-length frock-style garment, often paired with a fitted churidar or trouser underneath. It's a popular choice for formal and semi-formal events, especially in richer fabrics for weddings.",
+    "recommended_keywords": ["pishwas", "frock", "formal wear"],
+    "tags": ["trend-guide"]
+  }
+]

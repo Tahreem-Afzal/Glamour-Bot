@@ -1,0 +1,30 @@
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-dotenv==1.0.1
+pydantic
+python-multipart==0.0.9
+
+# Try-on: garment catalog DB + image handling
+sqlalchemy==2.0.30
+Pillow==10.3.0
+httpx==0.27.0
+fashn
+
+# Image generation (Stability AI)
+requests
+
+# Chatbot: knowledge base loading
+python-docx
+pypdf
+
+# Chatbot: vector search (NOTE: sentence-transformers pulls in torch --
+# this install is heavier/slower than the try-on-only backend was.
+# There is no lighter substitute without rewriting the RAG retrieval
+# approach entirely.)
+sentence-transformers
+faiss-cpu
+numpy
+
+# Chatbot: LLM + voice
+groq
+gtts

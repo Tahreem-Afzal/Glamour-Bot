@@ -1,0 +1,42 @@
+[
+  {
+    "id": "meta-001",
+    "category": "brand-info",
+    "question": "What Pakistani brands does GlamourBot know about?",
+    "answer_content": "GlamourBot's product recommender is set up to pull live listings from several Pakistani fashion storefronts including Maria B, Sana Safinaz, Gul Ahmed, Khaadi, Edenrobe, Limelight, Bonanza, Zellbury, Generation, Outfitters, Charcoal, and Junaid Jamshed. Coverage depends on which brands are currently configured and reachable.",
+    "recommended_keywords": ["brands", "which brands", "supported brands"],
+    "tags": ["brand-info"]
+  },
+  {
+    "id": "meta-002",
+    "category": "platform-info",
+    "question": "What languages does GlamourBot support?",
+    "answer_content": "GlamourBot supports English and Roman Urdu, automatically detecting and matching whichever language you write in.",
+    "recommended_keywords": ["languages", "roman urdu", "english"],
+    "tags": ["platform-info"]
+  },
+  {
+    "id": "meta-003",
+    "category": "platform-info",
+    "question": "Is GlamourBot free to use?",
+    "answer_content": "This depends on how GlamourBot is deployed and configured — check with whoever is hosting your instance of the assistant for current usage terms.",
+    "recommended_keywords": ["pricing", "free", "cost"],
+    "tags": ["platform-info"]
+  },
+  {
+    "id": "meta-004",
+    "category": "platform-info",
+    "question": "What can the voice feature do?",
+    "answer_content": "GlamourBot can accept a recorded voice message, transcribe it, generate a fashion-relevant answer, and read that answer back to you as synthesized speech.",
+    "recommended_keywords": ["voice", "speech", "audio"],
+    "tags": ["platform-info", "features"]
+  },
+  {
+    "id": "meta-005",
+    "category": "platform-info",
+    "question": "How current is the weather information used for styling advice?",
+    "answer_content": "Weather data comes from a live forecast lookup at the time of your message, so fabric suggestions reflect current conditions for the city you specify rather than a fixed seasonal assumption.",
+    "recommended_keywords": ["weather", "forecast", "current conditions"],
+    "tags": ["platform-info", "features"]
+  }
+]

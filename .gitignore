@@ -1,0 +1,31 @@
+# Secrets — never commit real API keys
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Backend local data / generated files
+backend/tryon.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/generated/*
+!backend/generated/.gitkeep
+# Note: backend/vector_db/ (prebuilt FAISS index) is intentionally NOT
+# ignored — it's not a secret, and keeping it in the repo means the
+# chatbot doesn't have to rebuild embeddings on every deploy.
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,162 @@
+[
+  {
+    "id": "faq-001",
+    "category": "general",
+    "question": "What is GlamourBot?",
+    "answer_content": "GlamourBot is an AI fashion assistant that helps you find outfit ideas, get styling advice, and discover real products from Pakistani fashion brands. You can chat in English or Roman Urdu.",
+    "recommended_keywords": ["about", "what is glamourbot"],
+    "tags": ["general", "onboarding"]
+  },
+  {
+    "id": "faq-002",
+    "category": "general",
+    "question": "Kya main Roman Urdu mein baat kar sakta hoon?",
+    "answer_content": "Bilkul! GlamourBot English aur Roman Urdu dono mein baat kar sakta hai. Aap jis language mein likhein ge, main usi mein jawab dunga.",
+    "recommended_keywords": ["roman urdu", "language"],
+    "tags": ["general", "language"]
+  },
+  {
+    "id": "faq-003",
+    "category": "styling",
+    "question": "What should I wear to a mehndi function?",
+    "answer_content": "Mehndi outfits usually lean bright and festive — think yellows, greens, and oranges in lighter fabrics like lawn, chiffon, or organza. A 3-piece suit with statement jewelry works well, and lighter fabrics are more comfortable if the event is outdoors.",
+    "recommended_keywords": ["mehndi", "wedding", "event"],
+    "tags": ["styling", "events"]
+  },
+  {
+    "id": "faq-004",
+    "category": "styling",
+    "question": "Which colors suit a warm skin tone?",
+    "answer_content": "Warm skin tones typically look great in earthy and warm-toned colors — mustard, rust, olive, warm reds, and coral. Jewel tones like emerald and deep teal also work well as accents.",
+    "recommended_keywords": ["skin tone", "color", "warm"],
+    "tags": ["styling", "color-theory"]
+  },
+  {
+    "id": "faq-005",
+    "category": "styling",
+    "question": "Which colors suit a cool skin tone?",
+    "answer_content": "Cool skin tones tend to suit jewel and cool-toned colors best — sapphire blue, magenta, true red, lavender, and silver-based tones. Pastels with a blue undertone also work nicely.",
+    "recommended_keywords": ["skin tone", "color", "cool"],
+    "tags": ["styling", "color-theory"]
+  },
+  {
+    "id": "faq-006",
+    "category": "styling",
+    "question": "What outfits suit a pear body type?",
+    "answer_content": "For a pear body type, outfits that add volume up top and keep the bottom streamlined tend to balance proportions well — think embellished necklines, statement sleeves, or A-line kurtas paired with straight-cut trousers.",
+    "recommended_keywords": ["body type", "pear", "fit"],
+    "tags": ["styling", "body-type"]
+  },
+  {
+    "id": "faq-007",
+    "category": "fabric",
+    "question": "What's the difference between lawn and cambric?",
+    "answer_content": "Lawn is a lightweight, finely woven cotton fabric popular for summer wear in Pakistan — breathable and slightly sheer. Cambric is also cotton but slightly heavier and more opaque, giving it a bit more structure while still staying breathable.",
+    "recommended_keywords": ["lawn", "cambric", "fabric"],
+    "tags": ["fabric-guide"]
+  },
+  {
+    "id": "faq-008",
+    "category": "fabric",
+    "question": "What fabric is best for hot weather?",
+    "answer_content": "Lightweight, breathable fabrics like lawn, cotton, chiffon, and linen are best in hot weather — they let air circulate and don't trap heat the way heavier fabrics like velvet or wool do.",
+    "recommended_keywords": ["hot weather", "summer", "fabric"],
+    "tags": ["fabric-guide", "weather"]
+  },
+  {
+    "id": "faq-009",
+    "category": "fabric",
+    "question": "What fabric is best for winter?",
+    "answer_content": "Warmer fabrics like velvet, wool, khaddar, and karandi are popular winter choices — they provide more insulation and often have a richer, heavier drape suited to the season's festive events too.",
+    "recommended_keywords": ["winter", "cold weather", "fabric"],
+    "tags": ["fabric-guide", "weather"]
+  },
+  {
+    "id": "faq-010",
+    "category": "events",
+    "question": "What should I wear to a formal office meeting?",
+    "answer_content": "For a formal meeting, a well-tailored kurta with straight trousers or a formal blazer over a shirt both work well. Stick to neutral or muted colors, minimal jewelry, and comfortable, polished footwear.",
+    "recommended_keywords": ["formal", "office", "meeting"],
+    "tags": ["styling", "events"]
+  },
+  {
+    "id": "faq-011",
+    "category": "events",
+    "question": "Baraat ke liye kya pehnun?",
+    "answer_content": "Baraat aik grand event hota hai, is liye rich fabrics jaise raw silk, velvet, ya heavily embroidered organza acha lagta hai. Bold colors jaise maroon, gold, ya emerald green is occasion ke liye perfect hain.",
+    "recommended_keywords": ["baraat", "wedding", "shaadi"],
+    "tags": ["styling", "events"]
+  },
+  {
+    "id": "faq-012",
+    "category": "accessories",
+    "question": "How do I match accessories to an outfit?",
+    "answer_content": "A good rule of thumb: let one element lead. If your outfit is heavily embroidered, keep jewelry simple. If the outfit is plain, a statement necklace or earrings can be the focal point. Match metals (gold/silver) to your outfit's undertone for a cohesive look.",
+    "recommended_keywords": ["accessories", "jewelry", "matching"],
+    "tags": ["styling", "accessories"]
+  },
+  {
+    "id": "faq-013",
+    "category": "accessories",
+    "question": "What bag goes with a formal outfit?",
+    "answer_content": "A structured clutch or a small top-handle bag in a neutral or metallic tone usually complements formal outfits well without competing with embroidery or embellishment.",
+    "recommended_keywords": ["bag", "clutch", "formal"],
+    "tags": ["styling", "accessories"]
+  },
+  {
+    "id": "faq-014",
+    "category": "general",
+    "question": "How does the try-on feature work?",
+    "answer_content": "The virtual try-on feature uses your webcam to detect your body position in real time and overlays a selected garment onto the live feed, scaled to your actual body measurements. It's a live 2D preview, not a photorealistic render.",
+    "recommended_keywords": ["try on", "virtual try-on", "webcam"],
+    "tags": ["general", "features"]
+  },
+  {
+    "id": "faq-015",
+    "category": "general",
+    "question": "Can GlamourBot suggest real products I can buy?",
+    "answer_content": "Yes — when you ask for outfit suggestions, GlamourBot can pull real products from partner Pakistani fashion brands with working links, instead of just describing an idea.",
+    "recommended_keywords": ["buy", "shop", "products", "brands"],
+    "tags": ["general", "features"]
+  },
+  {
+    "id": "faq-016",
+    "category": "styling",
+    "question": "What should I wear for a casual daytime outing?",
+    "answer_content": "For a casual outing, comfortable breathable fabrics like cotton or lawn in a relaxed kurta or western top with jeans work well. Keep accessories minimal and prioritize comfort for the weather.",
+    "recommended_keywords": ["casual", "daytime", "outing"],
+    "tags": ["styling", "events"]
+  },
+  {
+    "id": "faq-017",
+    "category": "styling",
+    "question": "What outfits work for a rectangle body type?",
+    "answer_content": "For a rectangle body type, outfits that create the illusion of a waist tend to flatter well — belted kurtas, peplum tops, or dresses with a defined waistline all help add shape.",
+    "recommended_keywords": ["body type", "rectangle", "fit"],
+    "tags": ["styling", "body-type"]
+  },
+  {
+    "id": "faq-018",
+    "category": "fabric",
+    "question": "Is chiffon good for a humid climate?",
+    "answer_content": "Chiffon is lightweight and drapes beautifully, but it isn't the most breathable option in humid conditions. Cotton or lawn tend to feel more comfortable if humidity is a bigger factor than heat alone.",
+    "recommended_keywords": ["chiffon", "humid", "fabric"],
+    "tags": ["fabric-guide", "weather"]
+  },
+  {
+    "id": "faq-019",
+    "category": "general",
+    "question": "Does GlamourBot remember my previous questions?",
+    "answer_content": "Within a single conversation, yes — GlamourBot can refer back to what you've already discussed. It doesn't currently save preferences across separate sessions.",
+    "recommended_keywords": ["memory", "history", "remember"],
+    "tags": ["general", "features"]
+  },
+  {
+    "id": "faq-020",
+    "category": "events",
+    "question": "What should I wear to a walima?",
+    "answer_content": "Walima outfits tend to be elegant and slightly more subdued than baraat wear — think refined embroidery on richer fabrics like organza, net, or silk, in colors like gold, champagne, or deep jewel tones.",
+    "recommended_keywords": ["walima", "wedding", "reception"],
+    "tags": ["styling", "events"]
+  }
+]

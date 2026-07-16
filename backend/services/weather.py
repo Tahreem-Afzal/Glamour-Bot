@@ -1,0 +1,108 @@
+"""
+weather.py
+Weather-aware context for GlamourBot — free, no API key required.
+Uses Open-Meteo geocoding + forecast APIs.
+"""
+
+import requests
+from typing import Optional
+
+GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
+FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+
+DEFAULT_CITY = "Lahore"
+DEFAULT_LAT, DEFAULT_LON = 31.5497, 74.3436
+
+WEATHER_CODE_LABELS = {
+    0: "clear sky", 1: "mostly clear", 2: "partly cloudy", 3: "overcast",
+    45: "fog", 48: "fog",
+    51: "light drizzle", 53: "drizzle", 55: "heavy drizzle",
+    61: "light rain", 63: "rain", 65: "heavy rain",
+    71: "light snow", 73: "snow", 75: "heavy snow",
+    80: "rain showers", 81: "rain showers", 82: "violent rain showers",
+    95: "thunderstorm", 96: "thunderstorm with hail", 99: "thunderstorm with hail",
+}
+
+
+def geocode_city(city_name: str) -> Optional[dict]:
+    try:
+        r = requests.get(
+            GEOCODE_URL,
+            params={"name": city_name, "count": 1, "language": "en", "format": "json"},
+            timeout=8,
+        )
+        r.raise_for_status()
+        results = r.json().get("results")
+        if not results:
+            return None
+        top = results[0]
+        return {
+            "lat": top["latitude"], "lon": top["longitude"],
+            "name": top.get("name", city_name), "country": top.get("country", ""),
+        }
+    except Exception as e:
+        print(f"[Weather] Geocoding failed for '{city_name}': {e}")
+        return None
+
+
+def get_weather(city_name: str = DEFAULT_CITY) -> dict:
+    loc = geocode_city(city_name)
+    if loc is None:
+        loc = {"lat": DEFAULT_LAT, "lon": DEFAULT_LON, "name": city_name, "country": ""}
+
+    try:
+        r = requests.get(
+            FORECAST_URL,
+            params={
+                "latitude": loc["lat"], "longitude": loc["lon"],
+                "current": "temperature_2m,relative_humidity_2m,apparent_temperature,"
+                           "precipitation,weather_code,wind_speed_10m",
+                "timezone": "auto",
+            },
+            timeout=8,
+        )
+        r.raise_for_status()
+        cur = r.json().get("current", {})
+
+        code = cur.get("weather_code", 0)
+        condition = WEATHER_CODE_LABELS.get(code, "unknown")
+        is_rainy = code in (51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99)
+
+        return {
+            "ok": True, "city": loc["name"],
+            "temp_c": cur.get("temperature_2m"), "feels_like_c": cur.get("apparent_temperature"),
+            "humidity_pct": cur.get("relative_humidity_2m"), "wind_kph": cur.get("wind_speed_10m"),
+            "condition": condition, "is_rainy": is_rainy, "weather_code": code,
+        }
+    except Exception as e:
+        print(f"[Weather] Forecast fetch failed for '{city_name}': {e}")
+        return {
+            "ok": False, "city": city_name, "temp_c": None, "feels_like_c": None,
+            "humidity_pct": None, "wind_kph": None, "condition": "unknown",
+            "is_rainy": False, "weather_code": None,
+        }
+
+
+def weather_to_fabric_hint(weather: dict) -> dict:
+    if not weather.get("ok") or weather.get("temp_c") is None:
+        return {"prefer_fabrics": [], "avoid_fabrics": [], "note": ""}
+
+    temp = weather["temp_c"]
+
+    if temp >= 32:
+        return {
+            "prefer_fabrics": ["lawn", "cotton", "chiffon", "linen", "cambric"],
+            "avoid_fabrics": ["velvet", "wool", "karandi"],
+            "note": f"It's {temp:.0f}°C in {weather['city']} — leaning toward lighter, breathable fabrics.",
+        }
+    elif temp <= 15:
+        return {
+            "prefer_fabrics": ["velvet", "wool", "karandi", "khaddar"],
+            "avoid_fabrics": ["lawn", "linen"],
+            "note": f"It's {temp:.0f}°C in {weather['city']} — leaning toward warmer fabrics.",
+        }
+    else:
+        return {
+            "prefer_fabrics": [], "avoid_fabrics": [],
+            "note": f"It's {temp:.0f}°C in {weather['city']} — comfortable range, no fabric weighting applied.",
+        }
