@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { API_BASE, S, COLORS } from "./styles.js";
+import HomePage from "./components/HomePage.jsx";
 import ChatbotPanel from "./components/ChatbotPanel.jsx";
 import RecommendPanel from "./components/RecommendPanel.jsx";
 import ImageGenPanel from "./components/ImageGenPanel.jsx";
@@ -7,6 +8,7 @@ import TryOnPanel from "./components/TryOnPanel.jsx";
 import WeatherWidget from "./components/WeatherWidget.jsx";
 
 const TABS = [
+  ["home", "Home"],
   ["chatbot", "Chatbot"],
   ["recommend", "Recommendations"],
   ["imagegen", "Image Generation"],
@@ -14,7 +16,7 @@ const TABS = [
 ];
 
 export default function App() {
-  const [tab, setTab] = useState("chatbot");
+  const [tab, setTab] = useState("home");
   const [health, setHealth] = useState(null);
   // Set by RecommendPanel's "Try On" button, consumed by TryOnPanel — lets a
   // product from Recommendations land pre-selected in the Try-On catalog
@@ -69,6 +71,7 @@ export default function App() {
       </header>
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {tab === "home" && <HomePage onNavigate={setTab} />}
         {tab === "chatbot" && <ChatbotPanel plannedEvent={plannedEvent} onClearPlan={() => setPlannedEvent(null)} />}
         {tab === "recommend" && (
           <RecommendPanel

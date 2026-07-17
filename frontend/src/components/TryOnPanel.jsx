@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { API_BASE, COLORS } from "../styles.js";
+import BeforeAfterSlider from "./BeforeAfterSlider.jsx";
 
 const CATEGORY_COLORS = {
   upper: { bg: COLORS.accentSoftBg, accent: COLORS.accent },
@@ -390,8 +391,8 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
 
             {resultUrl && (
               <div style={T.resultBox}>
-                <p style={T.colLabel}>RESULT</p>
-                <img src={resultUrl} style={{ ...T.previewImg, borderRadius: 8 }} alt="Try-on result" />
+                <p style={T.colLabel}>RESULT — drag to compare</p>
+                <BeforeAfterSlider before={personPreview} after={resultUrl} height={380} />
                 <button style={T.btnSave} onClick={downloadResult}>
                   ↓ Download Result
                 </button>

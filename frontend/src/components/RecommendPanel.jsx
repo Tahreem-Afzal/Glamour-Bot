@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
 
 const CATEGORIES = ["", "dress", "shirt", "kurta", "bag", "shoes", "jewelry", "sunglasses"];
 const COLOR_OPTIONS = ["", "red", "pink", "blue", "green", "black", "white", "gold", "silver", "maroon", "navy", "mustard", "mint"];
+const WISHLIST_KEY = "glamourai_wishlist";
+
+function loadWishlist() {
+  try {
+    const raw = localStorage.getItem(WISHLIST_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function RecommendPanel({ onTryOn, plannedEvent, onClearPlan }) {
   const [query, setQuery] = useState("");
@@ -14,6 +24,22 @@ export default function RecommendPanel({ onTryOn, plannedEvent, onClearPlan }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [tryingOnIndex, setTryingOnIndex] = useState(null);
+  const [wishlist, setWishlist] = useState(loadWishlist);
+  const [showWishlist, setShowWishlist] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  const isSaved = (product) => wishlist.some((w) => w.url === product.url);
+
+  const toggleSave = (product) => {
+    setWishlist((prev) =>
+      prev.some((w) => w.url === product.url)
+        ? prev.filter((w) => w.url !== product.url)
+        : [...prev, product]
+    );
+  };
 
   // Maps a product's free-text category word to the Try-On catalog's
   // three body-placement categories, so a "Try On" click files it in the
@@ -161,13 +187,26 @@ export default function RecommendPanel({ onTryOn, plannedEvent, onClearPlan }) {
           </div>
         )}
 
-        <button
-          style={{ ...S.btnPrimary, alignSelf: "flex-start", opacity: loading ? 0.6 : 1 }}
-          onClick={search}
-          disabled={loading}
-        >
-          {loading ? "Searching…" : "🔍 Find Products"}
-        </button>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <button
+            style={{ ...S.btnPrimary, opacity: loading ? 0.6 : 1 }}
+            onClick={search}
+            disabled={loading}
+          >
+            {loading ? "Searching…" : "🔍 Find Products"}
+          </button>
+          <button
+            style={{
+              ...S.btnSecondary,
+              borderColor: showWishlist ? COLORS.accent : S.btnSecondary.border,
+              color: showWishlist ? COLORS.accent : S.btnSecondary.color,
+              background: showWishlist ? COLORS.accentSoftBg : S.btnSecondary.background,
+            }}
+            onClick={() => setShowWishlist((s) => !s)}
+          >
+            {showWishlist ? "← Back to search" : `♥ Saved (${wishlist.length})`}
+          </button>
+        </div>
       </div>
 
       {loading && (
@@ -181,86 +220,128 @@ export default function RecommendPanel({ onTryOn, plannedEvent, onClearPlan }) {
         <div style={{ ...S.card, borderColor: COLORS.red, color: COLORS.red }}>⚠️ {error}</div>
       )}
 
-      {result && !result.has_results && (
-        <div style={{ ...S.card, color: COLORS.gold }}>{result.message}</div>
-      )}
-
-      {result && result.has_results && (
-        <>
-          {result.weather_note && (
-            <div style={{ ...S.card, color: COLORS.textSecondary, fontSize: 12, marginBottom: 14 }}>
-              {result.weather_note}
-            </div>
-          )}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-              gap: 16,
-            }}
-          >
-            {result.products.map((p, i) => (
-              <div
-                key={i}
-                style={{
-                  ...S.card,
-                  padding: 0,
-                  overflow: "hidden",
-                }}
-              >
-                <a
-                  href={p.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ textDecoration: "none", color: "inherit", display: "block" }}
-                >
-                  <div
-                    style={{
-                      height: 160,
-                      background: COLORS.surfaceAlt,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {p.image_url ? (
-                      <img src={p.image_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      <span style={{ fontSize: 32 }}>👗</span>
-                    )}
-                  </div>
-                  <div style={{ padding: "12px 14px 8px" }}>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{p.title}</p>
-                    <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.textSecondary }}>{p.brand}</p>
-                    {p.colors?.length > 0 && (
-                      <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.accent }}>
-                        {p.colors.join(" / ")} {p.colors_confirmed ? "" : "(approx.)"}
-                      </p>
-                    )}
-                    {p.price && <p style={{ margin: 0, fontSize: 13, color: COLORS.green }}>PKR {p.price}</p>}
-                  </div>
-                </a>
-                <div style={{ padding: "0 14px 14px" }}>
-                  <button
-                    style={{
-                      ...S.btnPrimary,
-                      width: "100%",
-                      padding: "8px 0",
-                      fontSize: 12,
-                      opacity: tryingOnIndex === i ? 0.6 : 1,
-                    }}
-                    onClick={() => handleTryOn(p, i)}
-                    disabled={tryingOnIndex === i || !p.image_url}
-                    title={!p.image_url ? "No product photo available to try on" : undefined}
-                  >
-                    {tryingOnIndex === i ? "Adding…" : "✦ Try On"}
-                  </button>
-                </div>
-              </div>
-            ))}
+      {showWishlist ? (
+        wishlist.length === 0 ? (
+          <div style={{ ...S.card, color: COLORS.textSecondary }}>
+            Nothing saved yet — tap the ♡ on any product to keep it here.
           </div>
+        ) : (
+          renderProductGrid(wishlist)
+        )
+      ) : (
+        <>
+          {result && !result.has_results && (
+            <div style={{ ...S.card, color: COLORS.gold }}>{result.message}</div>
+          )}
+
+          {result && result.has_results && (
+            <>
+              {result.weather_note && (
+                <div style={{ ...S.card, color: COLORS.textSecondary, fontSize: 12, marginBottom: 14 }}>
+                  {result.weather_note}
+                </div>
+              )}
+              {renderProductGrid(result.products)}
+            </>
+          )}
         </>
       )}
     </div>
   );
+
+  function renderProductGrid(products) {
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gap: 16,
+        }}
+      >
+        {products.map((p, i) => (
+          <div
+            key={p.url || i}
+            style={{
+              ...S.card,
+              padding: 0,
+              overflow: "hidden",
+              position: "relative",
+            }}
+          >
+            <button
+              onClick={() => toggleSave(p)}
+              title={isSaved(p) ? "Remove from saved" : "Save for later"}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                zIndex: 2,
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                border: "none",
+                background: "rgba(255,255,255,0.9)",
+                color: isSaved(p) ? COLORS.accent : COLORS.textMuted,
+                fontSize: 15,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {isSaved(p) ? "♥" : "♡"}
+            </button>
+            <a
+              href={p.url}
+              target="_blank"
+              rel="noreferrer"
+              style={{ textDecoration: "none", color: "inherit", display: "block" }}
+            >
+              <div
+                style={{
+                  height: 160,
+                  background: COLORS.surfaceAlt,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {p.image_url ? (
+                  <img src={p.image_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <span style={{ fontSize: 32 }}>👗</span>
+                )}
+              </div>
+              <div style={{ padding: "12px 14px 8px" }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{p.title}</p>
+                <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.textSecondary }}>{p.brand}</p>
+                {p.colors?.length > 0 && (
+                  <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.accent }}>
+                    {p.colors.join(" / ")} {p.colors_confirmed ? "" : "(approx.)"}
+                  </p>
+                )}
+                {p.price && <p style={{ margin: 0, fontSize: 13, color: COLORS.green }}>PKR {p.price}</p>}
+              </div>
+            </a>
+            <div style={{ padding: "0 14px 14px" }}>
+              <button
+                style={{
+                  ...S.btnPrimary,
+                  width: "100%",
+                  padding: "8px 0",
+                  fontSize: 12,
+                  opacity: tryingOnIndex === i ? 0.6 : 1,
+                }}
+                onClick={() => handleTryOn(p, i)}
+                disabled={tryingOnIndex === i || !p.image_url}
+                title={!p.image_url ? "No product photo available to try on" : undefined}
+              >
+                {tryingOnIndex === i ? "Adding…" : "✦ Try On"}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 }
