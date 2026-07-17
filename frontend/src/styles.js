@@ -4,6 +4,8 @@
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 // Editorial "blush & raspberry" palette — warm, light, fashion-forward.
+export const FONT_DISPLAY = "'Lora', Georgia, serif";
+
 export const COLORS = {
   bg: "#FFF8F3",
   surface: "#FFFFFF",
