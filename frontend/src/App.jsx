@@ -6,6 +6,7 @@ import RecommendPanel from "./components/RecommendPanel.jsx";
 import ImageGenPanel from "./components/ImageGenPanel.jsx";
 import TryOnPanel from "./components/TryOnPanel.jsx";
 import WeatherWidget from "./components/WeatherWidget.jsx";
+import AboutPage from "./components/AboutPage.jsx";
 
 const TABS = [
   ["home", "Home"],
@@ -13,6 +14,7 @@ const TABS = [
   ["recommend", "Recommendations"],
   ["imagegen", "Image Generation"],
   ["tryon", "Try-On"],
+  ["about", "About Us"],
 ];
 
 export default function App() {
@@ -90,6 +92,7 @@ export default function App() {
             onConsumePending={() => setPendingTryOnGarment(null)}
           />
         )}
+        {tab === "about" && <AboutPage />}
       </div>
     </div>
   );

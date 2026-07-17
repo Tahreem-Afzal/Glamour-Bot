@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { API_BASE, COLORS } from "../styles.js";
 import BeforeAfterSlider from "./BeforeAfterSlider.jsx";
+import PageHeader from "./PageHeader.jsx";
 
 const CATEGORY_COLORS = {
   upper: { bg: COLORS.accentSoftBg, accent: COLORS.accent },
@@ -269,7 +270,12 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
-      <div style={T.subNav}>
+      <PageHeader
+        eyebrow="Virtual fitting room"
+        title="See it on, before you buy it."
+        subtitle="Upload or capture a photo, pick a garment from the catalog, and generate a realistic composite of yourself wearing it — powered by FASHN's try-on model."
+      />
+      <div style={{ ...T.subNav, padding: "0 40px 12px" }}>
         {[
           ["tryon", "Try On"],
           ["catalog", "Catalog"],

@@ -1,167 +1,218 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
+import PageHeader from "./PageHeader.jsx";
 
-const CATEGORIES = ["", "dress", "shirt", "kurta", "bag", "shoes", "jewelry", "sunglasses"];
-const COLOR_OPTIONS = ["", "red", "pink", "blue", "green", "black", "white", "gold", "silver", "maroon", "navy", "mustard", "mint"];
-const WISHLIST_KEY = "glamourai_wishlist";
-
-function loadWishlist() {
-  try {
-    const raw = localStorage.getItem(WISHLIST_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-export default function RecommendPanel({ onTryOn, plannedEvent, onClearPlan }) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("");
-  const [color, setColor] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
+  const [messages, setMessages] = useState([
+    { role: "bot", text: "Hi! I'm GlamourBot — ask me about outfits, occasions, or fashion advice. You can write in English or Roman Urdu." },
+  ]);
+  const [input, setInput] = useState("");
   const [city, setCity] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [tryingOnIndex, setTryingOnIndex] = useState(null);
-  const [wishlist, setWishlist] = useState(loadWishlist);
-  const [showWishlist, setShowWishlist] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const scrollRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
+  const audioPlayerRef = useRef(null);
+  const recordTimerRef = useRef(null);
+  const recordStartRef = useRef(0);
 
   useEffect(() => {
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist));
-  }, [wishlist]);
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
 
-  const isSaved = (product) => wishlist.some((w) => w.url === product.url);
+  // Stop any active mic stream if the component unmounts mid-recording
+  // (e.g. the user switches tabs while recording).
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    clearInterval(recordTimerRef.current);
+  }, []);
 
-  const toggleSave = (product) => {
-    setWishlist((prev) =>
-      prev.some((w) => w.url === product.url)
-        ? prev.filter((w) => w.url !== product.url)
-        : [...prev, product]
-    );
-  };
-
-  // Maps a product's free-text category word to the Try-On catalog's
-  // three body-placement categories, so a "Try On" click files it in the
-  // right place without asking the user anything extra.
-  const inferTryOnCategory = (product) => {
-    const text = `${product.title} ${product.brand}`.toLowerCase();
-    if (/\b(shoe|shoes|heel|heels|sandal|sneaker|slipper|khussa)\b/.test(text)) return "lower"; // footwear has no dedicated slot; closest existing bucket
-    if (/\b(shirt|top|kurti|blouse|kameez)\b/.test(text)) return "upper";
-    if (/\b(trouser|pant|jeans|palazzo|shalwar|skirt)\b/.test(text)) return "lower";
-    return "full"; // dresses, suits, kaftans, sets, and anything unrecognized
-  };
-
-  const handleTryOn = async (product, index) => {
-    setTryingOnIndex(index);
+  const send = async () => {
+    const text = input.trim();
+    if (!text || sending) return;
+    setMessages((m) => [...m, { role: "user", text }]);
+    setInput("");
+    setSending(true);
     try {
-      const res = await fetch(`${API_BASE}/catalog/from-url`, {
+      const res = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          image_url: product.image_url,
-          name: product.title,
-          brand: product.brand || "",
-          category: inferTryOnCategory(product),
-          tags: product.colors || [],
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(err.detail || res.statusText);
-      }
-      const garment = await res.json();
-      onTryOn?.(garment);
-    } catch (err) {
-      setError(`Couldn't add "${product.title}" to Try-On: ${err.message}`);
-    } finally {
-      setTryingOnIndex(null);
-    }
-  };
-
-  const search = async () => {
-    if (!query.trim() && !category && !color && !maxPrice) {
-      setError("Type a query or pick a category/color/budget first.");
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    try {
-      const res = await fetch(`${API_BASE}/recommend/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: query.trim() || "outfit",
-          category: category || null,
-          color: color || null,
-          max_price: maxPrice ? Number(maxPrice) : null,
+          message: text,
           city: plannedEvent?.city || city || null,
           event_date: plannedEvent?.date || null,
-          max_results: 8,
         }),
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
-      setResult(data);
+      setMessages((m) => [...m, { role: "bot", text: data.response }]);
     } catch (err) {
-      setError(err.message);
+      setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't reach the backend: ${err.message}` }]);
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   };
 
-  return (
-    <div style={S.page}>
-      <h2 style={S.pageTitle}>RECOMMENDATION SYSTEM</h2>
+  const stopSpeaking = () => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current.currentTime = 0;
+    }
+    setIsSpeaking(false);
+  };
 
-      <div style={{ ...S.card, marginBottom: 20 }}>
-        <div style={S.formGroup}>
-          <label style={S.label}>WHAT ARE YOU LOOKING FOR?</label>
+  const startRecording = async () => {
+    // If the bot happens to still be speaking when the user chooses to
+    // record instead, cut it off — but pressing mic while speaking is now
+    // handled as "just stop speaking" (see micClick), so this is mostly a
+    // safety net for edge cases (e.g. speaking ends a split second after
+    // the click registers).
+    stopSpeaking();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      audioChunksRef.current = [];
+
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        sendVoice(blob);
+      };
+
+      recorder.start();
+      setIsRecording(true);
+      recordStartRef.current = Date.now();
+      setRecordSeconds(0);
+      recordTimerRef.current = setInterval(() => {
+        setRecordSeconds(Math.floor((Date.now() - recordStartRef.current) / 1000));
+      }, 250);
+    } catch (err) {
+      setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't access microphone: ${err.message}` }]);
+    }
+  };
+
+  const MIN_RECORDING_MS = 800; // guards against an accidental instant click producing a near-silent clip
+
+  const stopRecording = () => {
+    clearInterval(recordTimerRef.current);
+    const elapsed = Date.now() - recordStartRef.current;
+    if (elapsed < MIN_RECORDING_MS) {
+      // Let it keep recording a little longer rather than send a clip so
+      // short Whisper is likely to mistranscribe it as filler noise.
+      setTimeout(() => {
+        mediaRecorderRef.current?.stop();
+        setIsRecording(false);
+      }, MIN_RECORDING_MS - elapsed);
+      return;
+    }
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const sendVoice = async (blob) => {
+    setVoiceBusy(true);
+    try {
+      const formData = new FormData();
+      formData.append("audio", blob, "recording.webm");
+
+      const effectiveCity = plannedEvent?.city || city;
+      const params = new URLSearchParams();
+      if (effectiveCity) params.set("city", effectiveCity);
+      if (plannedEvent?.date) params.set("event_date", plannedEvent.date);
+      const url = `${API_BASE}/voice/input${params.toString() ? `?${params.toString()}` : ""}`;
+      const res = await fetch(url, { method: "POST", body: formData });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+      // Headers are percent-encoded on the backend (Urdu script/emoji
+      // aren't valid raw HTTP header bytes) — decode them back here.
+      const transcriptHeader = res.headers.get("X-Transcript");
+      const responseHeader = res.headers.get("X-Response");
+      const transcript = transcriptHeader ? decodeURIComponent(transcriptHeader) : "(voice message)";
+      const answer = responseHeader ? decodeURIComponent(responseHeader) : "";
+
+      setMessages((m) => [...m, { role: "user", text: transcript }, { role: "bot", text: answer }]);
+
+      const audioBlob = await res.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.src = audioUrl;
+        audioPlayerRef.current.play().catch(() => {
+          // Autoplay can be blocked by the browser — not fatal, the text
+          // reply is already shown either way.
+        });
+      }
+    } catch (err) {
+      setMessages((m) => [...m, { role: "bot", text: `⚠️ Voice message failed: ${err.message}` }]);
+    } finally {
+      setVoiceBusy(false);
+    }
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  };
+
+  // Three-way mic button, matching how ChatGPT's voice mode behaves:
+  // - Bot is speaking → just stop the speech (don't start recording)
+  // - Currently recording → stop recording and send it
+  // - Otherwise → start recording
+  const micClick = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  // Very light markdown: **bold** and bare URLs as clickable links —
+  // matches what the bot actually outputs (product recommendations use
+  // **Title** and a raw URL on the next line).
+  const renderText = (text) => {
+    const parts = text.split(/(\*\*[^*]+\*\*|https?:\/\/\S+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <b key={i}>{part.slice(2, -2)}</b>;
+      }
+      if (part.startsWith("http")) {
+        return (
+          <a key={i} href={part} target="_blank" rel="noreferrer" style={{ color: COLORS.accent }}>
+            {part}
+          </a>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
+  return (
+    <div style={{ flex: 1, overflowY: "auto" }}>
+      <PageHeader
+        eyebrow="Chatbot"
+        title="Ask it anything, in either language."
+        subtitle="Retrieval-augmented generation grounds every answer in the actual brand catalog — no invented products, no dead-end links."
+      />
+      <div style={{ padding: "0 40px 40px", maxWidth: 760 }}>
+      <div style={{ ...S.card, height: "65vh" }}>
+        <div style={{ ...S.formGroup, flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <label style={S.label}>CITY (for weather-aware suggestions)</label>
           <input
-            style={S.input}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="e.g. formal red heels for an engagement"
-          />
-        </div>
-        <div style={{ ...S.formGrid, gridTemplateColumns: "1fr 1fr 1fr" }}>
-          <div style={S.formGroup}>
-            <label style={S.label}>CATEGORY (optional)</label>
-            <select style={S.input} value={category} onChange={(e) => setCategory(e.target.value)}>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c || "Any"}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={S.formGroup}>
-            <label style={S.label}>COLOR (optional)</label>
-            <select style={S.input} value={color} onChange={(e) => setColor(e.target.value)}>
-              {COLOR_OPTIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c || "Any"}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={S.formGroup}>
-            <label style={S.label}>MAX BUDGET (PKR, optional)</label>
-            <input
-              type="number"
-              min="0"
-              style={S.input}
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              placeholder="e.g. 12000"
-            />
-          </div>
-        </div>
-        <div style={S.formGroup}>
-          <label style={S.label}>CITY (optional — enables weather-aware fabric suggestions)</label>
-          <input
-            style={S.input}
+            style={{ ...S.input, width: 160 }}
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="e.g. Lahore"
@@ -177,7 +228,7 @@ export default function RecommendPanel({ onTryOn, plannedEvent, onClearPlan }) {
               borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent,
             }}
           >
-            <span>📅 Planning for {plannedEvent.date} in {plannedEvent.city} — results use that day's forecast.</span>
+            <span>📅 Planning for {plannedEvent.date} in {plannedEvent.city} — advice uses that day's forecast.</span>
             <button
               onClick={onClearPlan}
               style={{ background: "none", border: "none", color: COLORS.accent, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}
@@ -187,161 +238,84 @@ export default function RecommendPanel({ onTryOn, plannedEvent, onClearPlan }) {
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button
-            style={{ ...S.btnPrimary, opacity: loading ? 0.6 : 1 }}
-            onClick={search}
-            disabled={loading}
-          >
-            {loading ? "Searching…" : "🔍 Find Products"}
-          </button>
+        <div
+          ref={scrollRef}
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            padding: "8px 4px",
+          }}
+        >
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              style={{
+                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+                maxWidth: "80%",
+                background: m.role === "user" ? COLORS.accentSoftBg : COLORS.surfaceAlt,
+                border: `1px solid ${m.role === "user" ? COLORS.accent : COLORS.border}`,
+                color: COLORS.textPrimary,
+                borderRadius: 8,
+                padding: "10px 14px",
+                fontSize: 13,
+                lineHeight: 1.5,
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {renderText(m.text)}
+            </div>
+          ))}
+          {(sending || voiceBusy) && (
+            <div style={S.spinnerWrap}>
+              <span style={S.spinner} /> {voiceBusy ? "Listening & thinking…" : "GlamourBot is thinking…"}
+            </div>
+          )}
+        </div>
+
+        <audio
+          ref={audioPlayerRef}
+          style={{ display: "none" }}
+          onPlay={() => setIsSpeaking(true)}
+          onPause={() => setIsSpeaking(false)}
+          onEnded={() => setIsSpeaking(false)}
+        />
+
+        <div style={{ display: "flex", gap: 8 }}>
           <button
             style={{
               ...S.btnSecondary,
-              borderColor: showWishlist ? COLORS.accent : S.btnSecondary.border,
-              color: showWishlist ? COLORS.accent : S.btnSecondary.color,
-              background: showWishlist ? COLORS.accentSoftBg : S.btnSecondary.background,
+              padding: "9px 14px",
+              borderColor: isRecording || isSpeaking ? COLORS.red : S.btnSecondary.border,
+              color: isRecording || isSpeaking ? COLORS.red : S.btnSecondary.color,
+              background: isRecording || isSpeaking ? COLORS.redSoftBg : S.btnSecondary.background,
             }}
-            onClick={() => setShowWishlist((s) => !s)}
+            onClick={micClick}
+            disabled={sending || voiceBusy}
+            title={isSpeaking ? "Stop GlamourBot speaking" : isRecording ? "Stop recording" : "Speak your question"}
           >
-            {showWishlist ? "← Back to search" : `♥ Saved (${wishlist.length})`}
+            {isSpeaking ? "⏸ Stop" : isRecording ? `⏹ ${recordSeconds}s` : "🎤"}
+          </button>
+          <input
+            style={{ ...S.input, flex: 1 }}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={onKeyDown}
+            placeholder={isRecording ? "Recording… speak now" : "Ask about outfits, occasions, or products…"}
+            disabled={isRecording}
+          />
+          <button
+            style={{ ...S.btnPrimary, opacity: sending || !input.trim() ? 0.5 : 1 }}
+            onClick={send}
+            disabled={sending || !input.trim() || isRecording}
+          >
+            Send
           </button>
         </div>
-      </div>
-
-      {loading && (
-        <div style={S.spinnerWrap}>
-          <span style={S.spinner} /> Fetching live product data — first search after a while can take a few
-          seconds while brand catalogs refresh.
         </div>
-      )}
-
-      {error && (
-        <div style={{ ...S.card, borderColor: COLORS.red, color: COLORS.red }}>⚠️ {error}</div>
-      )}
-
-      {showWishlist ? (
-        wishlist.length === 0 ? (
-          <div style={{ ...S.card, color: COLORS.textSecondary }}>
-            Nothing saved yet — tap the ♡ on any product to keep it here.
-          </div>
-        ) : (
-          renderProductGrid(wishlist)
-        )
-      ) : (
-        <>
-          {result && !result.has_results && (
-            <div style={{ ...S.card, color: COLORS.gold }}>{result.message}</div>
-          )}
-
-          {result && result.has_results && (
-            <>
-              {result.weather_note && (
-                <div style={{ ...S.card, color: COLORS.textSecondary, fontSize: 12, marginBottom: 14 }}>
-                  {result.weather_note}
-                </div>
-              )}
-              {renderProductGrid(result.products)}
-            </>
-          )}
-        </>
-      )}
+      </div>
     </div>
   );
-
-  function renderProductGrid(products) {
-    return (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: 16,
-        }}
-      >
-        {products.map((p, i) => (
-          <div
-            key={p.url || i}
-            style={{
-              ...S.card,
-              padding: 0,
-              overflow: "hidden",
-              position: "relative",
-            }}
-          >
-            <button
-              onClick={() => toggleSave(p)}
-              title={isSaved(p) ? "Remove from saved" : "Save for later"}
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                zIndex: 2,
-                width: 30,
-                height: 30,
-                borderRadius: "50%",
-                border: "none",
-                background: "rgba(255,255,255,0.9)",
-                color: isSaved(p) ? COLORS.accent : COLORS.textMuted,
-                fontSize: 15,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {isSaved(p) ? "♥" : "♡"}
-            </button>
-            <a
-              href={p.url}
-              target="_blank"
-              rel="noreferrer"
-              style={{ textDecoration: "none", color: "inherit", display: "block" }}
-            >
-              <div
-                style={{
-                  height: 160,
-                  background: COLORS.surfaceAlt,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {p.image_url ? (
-                  <img src={p.image_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  <span style={{ fontSize: 32 }}>👗</span>
-                )}
-              </div>
-              <div style={{ padding: "12px 14px 8px" }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{p.title}</p>
-                <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.textSecondary }}>{p.brand}</p>
-                {p.colors?.length > 0 && (
-                  <p style={{ margin: "4px 0", fontSize: 11, color: COLORS.accent }}>
-                    {p.colors.join(" / ")} {p.colors_confirmed ? "" : "(approx.)"}
-                  </p>
-                )}
-                {p.price && <p style={{ margin: 0, fontSize: 13, color: COLORS.green }}>PKR {p.price}</p>}
-              </div>
-            </a>
-            <div style={{ padding: "0 14px 14px" }}>
-              <button
-                style={{
-                  ...S.btnPrimary,
-                  width: "100%",
-                  padding: "8px 0",
-                  fontSize: 12,
-                  opacity: tryingOnIndex === i ? 0.6 : 1,
-                }}
-                onClick={() => handleTryOn(p, i)}
-                disabled={tryingOnIndex === i || !p.image_url}
-                title={!p.image_url ? "No product photo available to try on" : undefined}
-              >
-                {tryingOnIndex === i ? "Adding…" : "✦ Try On"}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 }

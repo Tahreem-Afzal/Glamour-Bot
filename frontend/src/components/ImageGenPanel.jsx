@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
+import PageHeader from "./PageHeader.jsx";
 
 export default function ImageGenPanel() {
   const [garmentTypes, setGarmentTypes] = useState([]);
@@ -66,8 +67,13 @@ export default function ImageGenPanel() {
   };
 
   return (
-    <div style={S.pageNarrow}>
-      <h2 style={S.pageTitle}>IMAGE GENERATION</h2>
+    <div style={{ flex: 1, overflowY: "auto" }}>
+      <PageHeader
+        eyebrow="Image generation"
+        title="Turn unstitched fabric into a finished look."
+        subtitle="Upload a fabric or cloth photo, pick a garment shape, and describe the occasion — Stability AI generates a realistic preview using the fabric's own color and print."
+      />
+      <div style={S.pageNarrow}>
 
       <div style={S.card}>
         <div style={S.formGroup}>
@@ -168,6 +174,7 @@ export default function ImageGenPanel() {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

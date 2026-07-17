@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
+import PageHeader from "./PageHeader.jsx";
 
 export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   const [messages, setMessages] = useState([
@@ -200,8 +201,13 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   };
 
   return (
-    <div style={S.pageNarrow}>
-      <h2 style={S.pageTitle}>CHATBOT</h2>
+    <div style={{ flex: 1, overflowY: "auto" }}>
+      <PageHeader
+        eyebrow="Chatbot"
+        title="Ask it anything, in either language."
+        subtitle="Retrieval-augmented generation grounds every answer in the actual brand catalog — no invented products, no dead-end links."
+      />
+      <div style={{ padding: "0 40px 40px", maxWidth: 760 }}>
       <div style={{ ...S.card, height: "65vh" }}>
         <div style={{ ...S.formGroup, flexDirection: "row", alignItems: "center", gap: 8 }}>
           <label style={S.label}>CITY (for weather-aware suggestions)</label>
@@ -307,6 +313,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
           >
             Send
           </button>
+        </div>
         </div>
       </div>
     </div>
