@@ -1,18 +1,13 @@
+import { useState } from "react";
 import { COLORS, FONT_DISPLAY } from "../styles.js";
 
-const STEPS = [
-  { icon: "💬", title: "1. Chat", desc: "Get styling advice", tab: "chatbot" },
-  { icon: "🛍️", title: "2. Discover", desc: "Find matching pieces", tab: "recommend" },
-  { icon: "✨", title: "3. Generate", desc: "From fabric to garment", tab: "imagegen" },
-  { icon: "👗", title: "4. Try On", desc: "See it on yourself", tab: "tryon" },
-];
-
-const NAV_PILLS = [
-  { label: "Recommendation system", tab: "recommend" },
-  { label: "Open the chatbot", tab: "chatbot" },
-  { label: "Image generation", tab: "imagegen" },
-  { label: "Try the AR fitting room", tab: "tryon" },
-  { label: "About us", tab: "about" },
+const CARDS = [
+  { icon: "🏠", title: "Home", desc: "Back to the start", tab: "home" },
+  { icon: "🛍️", title: "Recommendation system", desc: "Find matching pieces", tab: "recommend" },
+  { icon: "💬", title: "Chatbot", desc: "Get styling advice", tab: "chatbot" },
+  { icon: "✨", title: "Image generation", desc: "From fabric to garment", tab: "imagegen" },
+  { icon: "👗", title: "Try on", desc: "See it on yourself", tab: "tryon" },
+  { icon: "ℹ️", title: "About us", desc: "Meet the team", tab: "about" },
 ];
 
 const COPY = {
@@ -72,6 +67,7 @@ function PhoneMockup({ offset = 0, messages }) {
 export default function HomePage({ onNavigate, lang = "en" }) {
   const c = COPY[lang];
   const isUrdu = lang === "ur";
+  const [hoveredTab, setHoveredTab] = useState(null);
 
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
@@ -112,30 +108,6 @@ export default function HomePage({ onNavigate, lang = "en" }) {
             >
               {c.body}
             </p>
-
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: isUrdu ? "flex-end" : "flex-start" }}>
-              <button
-                onClick={() => onNavigate("home")}
-                style={{
-                  background: COLORS.accentSoftBg, border: `1px solid ${COLORS.accent}`, color: COLORS.accent,
-                  padding: "8px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                }}
-              >
-                Home
-              </button>
-              {NAV_PILLS.map((p) => (
-                <button
-                  key={p.tab}
-                  onClick={() => onNavigate(p.tab)}
-                  style={{
-                    background: "none", border: `1px solid ${COLORS.border}`, color: COLORS.textSecondary,
-                    padding: "8px 16px", borderRadius: 20, fontSize: 12, cursor: "pointer",
-                  }}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="glamourai-home-phones" style={{ position: "relative", height: 300 }}>
@@ -163,42 +135,53 @@ export default function HomePage({ onNavigate, lang = "en" }) {
         id="how-it-works"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
           gap: 14,
           padding: "24px 24px 56px",
-          maxWidth: 900,
+          maxWidth: 1100,
           margin: "0 auto",
         }}
       >
-        {STEPS.map((s) => (
-          <button
-            key={s.tab}
-            onClick={() => onNavigate(s.tab)}
-            style={{
-              background: COLORS.surface,
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: 12,
-              padding: "20px 16px",
-              textAlign: "center",
-              cursor: "pointer",
-              transition: "transform 0.15s, box-shadow 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow = `0 8px 20px rgba(198, 66, 125, 0.12)`;
-              e.currentTarget.style.borderColor = COLORS.accent;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "none";
-              e.currentTarget.style.boxShadow = "none";
-              e.currentTarget.style.borderColor = COLORS.border;
-            }}
-          >
-            <div style={{ fontSize: 26, marginBottom: 10 }}>{s.icon}</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>{s.title}</div>
-            <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 3 }}>{s.desc}</div>
-          </button>
-        ))}
+        {CARDS.map((s) => {
+          const hovered = hoveredTab === s.tab;
+          return (
+            <button
+              key={s.tab}
+              onClick={() => onNavigate(s.tab)}
+              onMouseEnter={() => setHoveredTab(s.tab)}
+              onMouseLeave={() => setHoveredTab(null)}
+              style={{
+                background: COLORS.accentSoftBg,
+                border: `2px solid ${COLORS.accent}`,
+                borderRadius: 12,
+                padding: "20px 16px",
+                textAlign: "center",
+                cursor: "pointer",
+                transition: "transform 0.15s, box-shadow 0.15s",
+                transform: hovered ? "translateY(-3px)" : "none",
+                boxShadow: hovered ? "0 8px 20px rgba(194, 24, 91, 0.18)" : "none",
+              }}
+            >
+              <div style={{ fontSize: 26, marginBottom: 10 }}>{s.icon}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>{s.title}</div>
+              <div style={{ fontSize: 12, color: COLORS.textSecondary, marginTop: 3 }}>{s.desc}</div>
+              <span
+                style={{
+                  display: "inline-block",
+                  marginTop: 8,
+                  fontSize: 15,
+                  color: COLORS.accent,
+                  fontWeight: 700,
+                  opacity: hovered ? 1 : 0,
+                  transform: hovered ? "translateX(0)" : "translateX(-6px)",
+                  transition: "opacity 0.15s, transform 0.15s",
+                }}
+              >
+                →
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
