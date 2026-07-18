@@ -83,7 +83,7 @@ export default function AboutPage() {
 
       <div
         style={{
-          padding: "0 100px 48px",
+          padding: "0 clamp(16px, 6vw, 100px) 48px",
           width: "100%",
           boxSizing: "border-box",
           display: "flex",

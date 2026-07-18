@@ -215,9 +215,9 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
         title="Ask it anything, in either language."
         subtitle="Retrieval-augmented generation grounds every answer in the actual brand catalog — no invented products, no dead-end links."
       />
-      <div style={{ padding: "0 100px 40px", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ padding: "0 clamp(16px, 6vw, 100px) 40px", width: "100%", boxSizing: "border-box" }}>
       <div style={{ ...S.card, height: "65vh", width: "100%", boxSizing: "border-box", border: `3px solid ${COLORS.accent}` }}>
-        <div style={{ ...S.formGroup, flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <div style={{ ...S.formGroup, flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <label style={S.label}>CITY (for weather-aware suggestions)</label>
           <input
             style={{ ...S.input, width: 160, border: `1.5px solid ${COLORS.accent}` }}

@@ -62,7 +62,7 @@ export default function App() {
           </span>
         </div>
         {!isHome && (
-          <nav style={S.nav}>
+          <nav className="glamourai-nav" style={S.nav}>
             {TABS.map(([t, label]) => (
               <button key={t} style={{ ...S.navBtn, ...(tab === t ? S.navBtnActive : {}) }} onClick={() => setTab(t)}>
                 {label}

@@ -2,7 +2,7 @@ import { COLORS, FONT_DISPLAY } from "../styles.js";
 
 export default function PageHeader({ eyebrow, title, subtitle, eyebrowStyle }) {
   return (
-    <div style={{ padding: "40px 100px 28px" }}>
+    <div style={{ padding: "40px clamp(16px, 6vw, 100px) 28px" }}>
       <div
         style={{
           display: "flex",
@@ -16,7 +16,7 @@ export default function PageHeader({ eyebrow, title, subtitle, eyebrowStyle }) {
           ...eyebrowStyle,
         }}
       >
-        <span style={{ width: 16, height: 1, background: COLORS.accent, display: "inline-block" }} />
+        <span style={{ width: "1.4em", height: 2, background: COLORS.accent, display: "inline-block" }} />
         {eyebrow.toUpperCase()}
       </div>
       <h1

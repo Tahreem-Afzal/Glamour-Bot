@@ -272,11 +272,11 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
       <PageHeader
         eyebrow="Virtual fitting room"
-        eyebrowStyle={{ fontSize: 15, fontWeight: 800, color: COLORS.accent }}
+        eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
         title="See it before you BUY it."
         subtitle="Experience fashion like never before with GlamourAI's Virtual Try-On. Upload your photo, choose any outfit, and instantly see how it looks on you. Explore styles with confidence and discover your perfect look before making a choice."
       />
-      <div style={{ ...T.subNav, padding: "0 100px 12px" }}>
+      <div style={{ ...T.subNav, padding: "0 clamp(16px, 6vw, 100px) 12px" }}>
         {[
           ["tryon", "Try on"],
           ["catalog", "Catalog"],
@@ -491,7 +491,7 @@ const T = {
   subNavBtn: { background: "none", border: `1.5px solid ${COLORS.accent}`, color: COLORS.textSecondary, padding: "6px 16px", cursor: "pointer", fontSize: 12, borderRadius: 20 },
   subNavBtnActive: { color: COLORS.accent, borderColor: COLORS.accent, background: COLORS.accentSoftBg },
   toast: { position: "fixed", top: 18, right: 18, zIndex: 9999, padding: "10px 18px", borderRadius: 6, fontSize: 13, border: "1px solid", maxWidth: 380, lineHeight: 1.5 },
-  tryonRoot: { display: "flex", flexDirection: "column", flex: 1, overflow: "auto", padding: "0 100px 40px", gap: 20 },
+  tryonRoot: { display: "flex", flexDirection: "column", flex: 1, overflow: "auto", padding: "0 clamp(16px, 6vw, 100px) 40px", gap: 20 },
   leftPane: { display: "flex", flexDirection: "column", gap: 14 },
   modeToggle: { display: "flex", gap: 0, border: `1.5px solid ${COLORS.accent}`, borderRadius: 20, overflow: "hidden", alignSelf: "flex-start" },
   modeBtn: { background: "none", border: "none", color: COLORS.textSecondary, padding: "8px 20px", cursor: "pointer", fontSize: 13 },
@@ -521,11 +521,11 @@ const T = {
   thumbImg: { width: "100%", height: "100%", objectFit: "cover" },
   garmentName: { margin: 0, fontSize: 12, fontWeight: 600, color: COLORS.textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
   garmentBrand: { margin: "2px 0 4px", fontSize: 10, color: COLORS.textSecondary },
-  catalogPage: { padding: "20px 100px 48px", overflowY: "auto" },
+  catalogPage: { padding: "20px clamp(16px, 6vw, 100px) 48px", overflowY: "auto" },
   catalogGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 16 },
   catalogCard: { background: COLORS.surface, border: `2px solid ${COLORS.accent}`, borderRadius: 12, overflow: "hidden" },
   catalogThumb: { height: 180, display: "flex", alignItems: "center", justifyContent: "center" },
-  uploadPage: { padding: "24px 100px 48px", maxWidth: 900, overflowY: "auto" },
+  uploadPage: { padding: "24px clamp(16px, 6vw, 100px) 48px", maxWidth: 900, overflowY: "auto" },
   uploadCard: { background: COLORS.surface, border: `3px solid ${COLORS.accent}`, borderRadius: 12, padding: 24, display: "flex", flexDirection: "column", gap: 16 },
   formGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 },
   formGroup: { display: "flex", flexDirection: "column", gap: 5 },

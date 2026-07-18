@@ -72,7 +72,7 @@ export default function HomePage({ onNavigate, lang = "en" }) {
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px 40px", position: "relative" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 40, alignItems: "center" }}>
+        <div className="glamourai-hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 40, alignItems: "center" }}>
           <div dir={isUrdu ? "rtl" : "ltr"}>
             <div
               style={{

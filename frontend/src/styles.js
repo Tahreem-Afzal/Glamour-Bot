@@ -88,8 +88,8 @@ export const S = {
     maxWidth: 380,
     lineHeight: 1.5,
   },
-  page: { flex: 1, overflowY: "auto", padding: "22px 100px" },
-  pageNarrow: { flex: 1, overflowY: "auto", padding: "0 100px 48px" },
+  page: { flex: 1, overflowY: "auto", padding: "22px clamp(16px, 6vw, 100px)" },
+  pageNarrow: { flex: 1, overflowY: "auto", padding: "0 clamp(16px, 6vw, 100px) 48px" },
   pageTitle: { fontSize: 16, letterSpacing: 3, color: COLORS.accent, margin: "0 0 18px" },
   card: {
     background: COLORS.cardBg,
@@ -125,7 +125,7 @@ export const S = {
     minHeight: 70,
   },
   formGroup: { display: "flex", flexDirection: "column", gap: 5 },
-  formGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 },
+  formGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 },
   btnPrimary: {
     background: COLORS.accent,
     border: `1px solid ${COLORS.accent}`,
@@ -180,6 +180,31 @@ if (typeof document !== "undefined" && !document.getElementById("glamourai-keyfr
       flex: 1;
       min-width: 0;
       min-height: 0;
+    }
+
+    /* ---- Mobile fixes ---- */
+    @media (max-width: 720px) {
+      .glamourai-hero-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .glamourai-home-phones {
+        display: none !important;
+      }
+      .glamourai-nav {
+        overflow-x: auto;
+        flex-wrap: nowrap !important;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+      }
+      .glamourai-nav::-webkit-scrollbar {
+        display: none;
+      }
+      .glamourai-nav button {
+        flex-shrink: 0;
+      }
+      .glamourai-page-transition {
+        overflow-x: hidden;
+      }
     }
   `;
   document.head.appendChild(style);
