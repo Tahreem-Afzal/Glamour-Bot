@@ -12,8 +12,8 @@ const CARDS = [
 
 const COPY = {
   en: {
-    headline: ["Style advice that ", "actually", " speaks your language."],
-    body: "A bilingual AI fashion assistant that chats in English or Urdu, recommends outfits from a real Pakistani brand catalog, and lets you try them on before you buy — all through the browser, no app install.",
+    headline: ["Your Style, Perfected by ", "AI", ""],
+    body: "Every great look starts with an idea. Share your occasion, and GlamourAI transforms it into a complete style journey—from bilingual AI styling in English and Urdu to personalized outfit inspiration, curated recommendations, and custom designs crafted from your own fabric. Finish with AI Virtual Try-On and see your perfect look before it comes to life—all directly in your browser, with no app to install.",
   },
   ur: {
     headline: ["اسٹائل کا مشورہ جو ", "واقعی", " آپ کی زبان میں بات کرتا ہے۔"],
@@ -76,13 +76,13 @@ export default function HomePage({ onNavigate, lang = "en" }) {
           <div dir={isUrdu ? "rtl" : "ltr"}>
             <div
               style={{
-                display: "flex", alignItems: "center", gap: 8, fontSize: 11, letterSpacing: 2,
+                display: "flex", alignItems: "center", gap: 8, fontSize: 20, fontWeight: 800, letterSpacing: 2,
                 color: COLORS.accent, marginBottom: 18, justifyContent: isUrdu ? "flex-end" : "flex-start",
               }}
             >
-              {!isUrdu && <span style={{ width: 16, height: 1, background: COLORS.accent }} />}
+              {!isUrdu && <span style={{ width: "1em", height: 3, background: COLORS.accent }} />}
               GLAMOURAI
-              {isUrdu && <span style={{ width: 16, height: 1, background: COLORS.accent }} />}
+              {isUrdu && <span style={{ width: "1em", height: 3, background: COLORS.accent }} />}
             </div>
             <h1
               style={{
