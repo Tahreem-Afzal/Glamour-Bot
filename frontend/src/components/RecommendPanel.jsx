@@ -141,7 +141,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
         subtitle="Ranked against fit, occasion, and stated preferences across the ingested catalog — 12,460 garments, 22 brands."
       />
 
-      <div style={{ padding: "0 40px 48px" }}>
+      <div style={{ padding: "0 100px 48px" }}>
         <div style={S.card}>
           <div style={S.formGroup}>
             <label style={S.label}>WHAT ARE YOU LOOKING FOR?</label>

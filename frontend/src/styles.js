@@ -88,8 +88,8 @@ export const S = {
     maxWidth: 380,
     lineHeight: 1.5,
   },
-  page: { flex: 1, overflowY: "auto", padding: "22px 28px" },
-  pageNarrow: { flex: 1, overflowY: "auto", padding: "22px 28px", maxWidth: 760, margin: "0 auto", width: "100%" },
+  page: { flex: 1, overflowY: "auto", padding: "22px 100px" },
+  pageNarrow: { flex: 1, overflowY: "auto", padding: "0 100px 48px" },
   pageTitle: { fontSize: 16, letterSpacing: 3, color: COLORS.accent, margin: "0 0 18px" },
   card: {
     background: COLORS.cardBg,

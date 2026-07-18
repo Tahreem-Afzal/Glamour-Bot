@@ -85,7 +85,7 @@ export default function ImageGenPanel() {
               padding: 20,
               textAlign: "center",
               cursor: "pointer",
-              minHeight: 160,
+              minHeight: 260,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
