@@ -79,7 +79,11 @@ function PersonCard({ name, role, detail, description }) {
 export default function AboutPage() {
   return (
     <div style={{ flex: 1, width: "100%", overflowY: "auto" }}>
-      <PageHeader eyebrow="About us" title="The people behind GlamourAI." />
+      <PageHeader
+        eyebrow="About us"
+        eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
+        title="The people behind GlamourAI."
+      />
 
       <div
         style={{
@@ -97,7 +101,7 @@ export default function AboutPage() {
             name="Dr. Ashfaq Ahmad"
             role="Project supervisor"
             detail="Department of Artificial Intelligence, UMT Lahore"
-            description="Provided invaluable guidance, continuous support, and expert mentorship throughout the development of GlamourAI, helping shape the project from concept to completion."
+            description="Provided invaluable guidance, continuous support, and expert mentorship throughout the development of GlamourAI, helping shape the project from concept to completion. Their insightful feedback, technical expertise, and constant encouragement played a vital role in refining our ideas, overcoming challenges, and ensuring the successful execution of the project. Their mentorship inspired innovation, strengthened our problem-solving approach, and significantly contributed to the overall quality and success of GlamourAI."
           />
         </div>
 
@@ -107,7 +111,7 @@ export default function AboutPage() {
             name="Dr. Iqra Javed"
             role="Co-supervisor"
             detail="Department of Computer Science, UMT Lahore"
-            description="Generously shared her time and technical expertise from a computer science perspective, offering valuable feedback on system design and implementation that helped strengthen the project at several key stages."
+            description="Generously shared her time, knowledge, and technical expertise from a Computer Science perspective, offering thoughtful guidance and constructive feedback throughout the development of GlamourAI. Her valuable insights into system design, architecture, implementation, and problem-solving helped strengthen the project at several key stages. Through her continuous support and encouragement, she played an important role in refining our technical approach, improving the overall quality of the system, and ensuring that the project was developed with a strong, reliable, and well-structured foundation."
           />
         </div>
 
@@ -133,16 +137,44 @@ export default function AboutPage() {
             }}
           >
             <p style={{ margin: 0, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.8 }}>
-              GlamourAI is a final-year BS Artificial Intelligence project from the University of Management &
-              Technology, Lahore, built to make outfit discovery feel effortless rather than overwhelming. At its
-              core is a bilingual fashion chatbot that understands both English and Roman Urdu, so it speaks the way
-              our users actually do. Alongside it sits a live-catalog recommendation engine that ranks real products
-              from Pakistani brands against fit, occasion, and stated preferences instead of generic search results.
-              A fabric-guided image generator lets users turn an unstitched cloth photo into a realistic finished
-              garment before ever placing an order. A virtual try-on experience, powered by pose-landmark detection,
-              then lets them see that outfit on themselves — measurement-based, not a flat sticker overlay. Together,
-              these pieces form one weather-aware platform that makes deciding what to wear, and what to buy, faster
-              and more personal.
+              GlamourAI is a final-year BS Artificial Intelligence project developed at the University of Management
+              & Technology (UMT), Lahore, with a vision to make outfit discovery effortless, inspiring, and
+              personal. Instead of switching between different apps for inspiration, shopping, designing, and
+              fitting, GlamourAI brings every stage together in one intelligent experience.
+              <br /><br />
+              Your journey begins with our AI Fashion Stylist, which understands your event, preferences, language,
+              and even the weather on your selected date to create a complete fashion plan—including outfits, shoes,
+              accessories, and makeup. Once you've found your inspiration, our Recommendation System helps you
+              discover products that match your vision. If you can't find exactly what you're looking for—or you'd
+              rather create something truly unique—our AI Image Generation module transforms your own fabric and
+              design ideas into realistic garment previews while preserving the original colors and prints.
+              Finally, our Virtual Try-On technology lets you see your chosen or custom-designed outfit on yourself
+              before making a decision. From the first idea to the final look, GlamourAI empowers you to create,
+              personalize, and wear fashion with confidence.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <SectionLabel>THOUGHT BEHIND THE PROJECT</SectionLabel>
+          <div
+            style={{
+              background: COLORS.accentSoftBg,
+              border: `2px solid ${COLORS.accent}`,
+              borderRadius: 12,
+              padding: 22,
+              width: "100%",
+              boxSizing: "border-box",
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.8 }}>
+              Fashion should be exciting, not overwhelming. Yet finding the perfect outfit often means searching
+              through countless stores, gathering inspiration from different platforms, imagining how fabrics will
+              look when stitched, and wondering whether the final result will suit you. GlamourAI was created to
+              bring this fragmented journey into one intelligent experience. By combining AI-powered styling,
+              personalized recommendations, custom garment visualization, and virtual try-on, our goal is to help
+              people make confident fashion decisions with ease—saving time, reducing uncertainty, and making
+              personal style more accessible to everyone.
             </p>
           </div>
         </div>
