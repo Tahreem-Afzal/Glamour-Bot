@@ -10,8 +10,8 @@ import AboutPage from "./components/AboutPage.jsx";
 
 const TABS = [
   ["home", "Home"],
-  ["chatbot", "Chatbot"],
   ["recommend", "Recommendations"],
+  ["chatbot", "Chatbot"],
   ["imagegen", "Image Generation"],
   ["tryon", "Try-On"],
   ["about", "About Us"],

@@ -201,14 +201,14 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   };
 
   return (
-    <div style={{ flex: 1, overflowY: "auto" }}>
+    <div style={{ flex: 1, width: "100%", overflowY: "auto" }}>
       <PageHeader
         eyebrow="Chatbot"
         title="Ask it anything, in either language."
         subtitle="Retrieval-augmented generation grounds every answer in the actual brand catalog — no invented products, no dead-end links."
       />
-      <div style={{ padding: "0 40px 40px", maxWidth: 760 }}>
-      <div style={{ ...S.card, height: "65vh" }}>
+      <div style={{ padding: "0 100px 40px", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ ...S.card, height: "65vh", width: "100%", boxSizing: "border-box" }}>
         <div style={{ ...S.formGroup, flexDirection: "row", alignItems: "center", gap: 8 }}>
           <label style={S.label}>CITY (for weather-aware suggestions)</label>
           <input
