@@ -144,6 +144,7 @@ export default function HomePage({ onNavigate, lang = "en" }) {
       >
         {CARDS.map((s) => {
           const hovered = hoveredTab === s.tab;
+          const isCurrent = s.tab === "home";
           return (
             <button
               key={s.tab}
@@ -151,8 +152,8 @@ export default function HomePage({ onNavigate, lang = "en" }) {
               onMouseEnter={() => setHoveredTab(s.tab)}
               onMouseLeave={() => setHoveredTab(null)}
               style={{
-                background: COLORS.accentSoftBg,
-                border: `2px solid ${COLORS.accent}`,
+                background: isCurrent ? COLORS.accent : COLORS.accentSoftBg,
+                border: `2px solid ${isCurrent ? COLORS.accentDark : COLORS.accent}`,
                 borderRadius: 12,
                 padding: "20px 16px",
                 textAlign: "center",
@@ -163,14 +164,23 @@ export default function HomePage({ onNavigate, lang = "en" }) {
               }}
             >
               <div style={{ fontSize: 26, marginBottom: 10 }}>{s.icon}</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>{s.title}</div>
-              <div style={{ fontSize: 12, color: COLORS.textSecondary, marginTop: 3 }}>{s.desc}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: isCurrent ? "#fff" : COLORS.textPrimary }}>
+                {s.title}
+                {isCurrent && (
+                  <span style={{ display: "block", fontSize: 9, fontWeight: 700, letterSpacing: 1, color: "#fff", opacity: 0.85, marginTop: 2 }}>
+                    YOU ARE HERE
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 12, color: isCurrent ? "rgba(255,255,255,0.85)" : COLORS.textSecondary, marginTop: 3 }}>
+                {s.desc}
+              </div>
               <span
                 style={{
                   display: "inline-block",
                   marginTop: 8,
                   fontSize: 15,
-                  color: COLORS.accent,
+                  color: isCurrent ? "#fff" : COLORS.accent,
                   fontWeight: 700,
                   opacity: hovered ? 1 : 0,
                   transform: hovered ? "translateX(0)" : "translateX(-6px)",
