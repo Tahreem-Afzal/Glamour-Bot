@@ -271,9 +271,10 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
       <PageHeader
-        eyebrow="AR fitting room"
-        title="See it on, before you buy it."
-        subtitle="MediaPipe pose landmarks map the garment to your body in real time — measurement-based warping, not a flat sticker overlay."
+        eyebrow="Virtual fitting room"
+        eyebrowStyle={{ fontSize: 15, fontWeight: 800, color: COLORS.accent }}
+        title="See it before you BUY it."
+        subtitle="Experience fashion like never before with GlamourAI's Virtual Try-On. Upload your photo, choose any outfit, and instantly see how it looks on you. Explore styles with confidence and discover your perfect look before making a choice."
       />
       <div style={{ ...T.subNav, padding: "0 100px 12px" }}>
         {[

@@ -1,8 +1,8 @@
 import { COLORS, FONT_DISPLAY } from "../styles.js";
 
-export default function PageHeader({ eyebrow, title, subtitle }) {
+export default function PageHeader({ eyebrow, title, subtitle, eyebrowStyle }) {
   return (
-    <div style={{ padding: "40px 40px 28px" }}>
+    <div style={{ padding: "40px 100px 28px" }}>
       <div
         style={{
           display: "flex",
@@ -13,6 +13,7 @@ export default function PageHeader({ eyebrow, title, subtitle }) {
           color: COLORS.accent,
           fontWeight: 600,
           marginBottom: 14,
+          ...eyebrowStyle,
         }}
       >
         <span style={{ width: 16, height: 1, background: COLORS.accent, display: "inline-block" }} />
