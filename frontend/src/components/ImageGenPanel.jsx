@@ -2,14 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
 import PageHeader from "./PageHeader.jsx";
 
-const OCCASION_PRESETS = [
-  { label: "🌙 Eid", text: "eid ke liye light pink frock, round neckline, half sleeves" },
-  { label: "💍 Wedding", text: "wedding guest outfit in maroon, embroidered, full sleeves" },
-  { label: "👖 Casual", text: "casual everyday wear, light cotton, simple neckline" },
-  { label: "🎉 Party", text: "party wear in navy blue, sequin detailing, sleeveless" },
-  { label: "💼 Office", text: "formal office wear in beige, modest cut, three-quarter sleeves" },
-];
-
 export default function ImageGenPanel() {
   const [garmentTypes, setGarmentTypes] = useState([]);
   const [garmentType, setGarmentType] = useState("frock");
@@ -127,38 +119,6 @@ export default function ImageGenPanel() {
               style={{ display: "none" }}
               onChange={(e) => handleFabricUpload(e.target.files?.[0])}
             />
-          </div>
-        </div>
-
-        <div style={S.formGroup}>
-          <label style={S.label}>OCCASION PRESETS — TAP TO FILL DETAILS</label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {OCCASION_PRESETS.map((p) => (
-              <button
-                key={p.label}
-                onClick={() => setDetailPrompt(p.text)}
-                style={{
-                  background: COLORS.accentSoftBg,
-                  border: `1.5px solid ${COLORS.accent}`,
-                  color: COLORS.accentDark,
-                  padding: "6px 12px",
-                  borderRadius: 20,
-                  fontSize: 12,
-                  cursor: "pointer",
-                  transition: "transform 0.12s, box-shadow 0.12s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 6px 14px rgba(194, 24, 91, 0.2)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
           </div>
         </div>
 
