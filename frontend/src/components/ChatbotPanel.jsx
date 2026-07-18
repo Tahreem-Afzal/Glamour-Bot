@@ -2,6 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
 import PageHeader from "./PageHeader.jsx";
 
+const SUGGESTED_PROMPTS = [
+  "👗 Suggest an outfit for a wedding",
+  "☔ What should I wear in monsoon season?",
+  "💼 Something formal for a job interview",
+  "🌙 Eid outfit ideas in light pink",
+  "🥻 Casual lawn suit for everyday wear",
+];
+
 export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   const [messages, setMessages] = useState([
     { role: "bot", text: "Hi! I'm GlamourBot — ask me about outfits, occasions, or fashion advice. You can write in English or Roman Urdu." },
@@ -32,8 +40,8 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
     clearInterval(recordTimerRef.current);
   }, []);
 
-  const send = async () => {
-    const text = input.trim();
+  const send = async (overrideText) => {
+    const text = (overrideText ?? input).trim();
     if (!text || sending) return;
     setMessages((m) => [...m, { role: "user", text }]);
     setInput("");
@@ -208,16 +216,47 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
         subtitle="Retrieval-augmented generation grounds every answer in the actual brand catalog — no invented products, no dead-end links."
       />
       <div style={{ padding: "0 100px 40px", width: "100%", boxSizing: "border-box" }}>
-      <div style={{ ...S.card, height: "65vh", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ ...S.card, height: "65vh", width: "100%", boxSizing: "border-box", border: `3px solid ${COLORS.accent}` }}>
         <div style={{ ...S.formGroup, flexDirection: "row", alignItems: "center", gap: 8 }}>
           <label style={S.label}>CITY (for weather-aware suggestions)</label>
           <input
-            style={{ ...S.input, width: 160 }}
+            style={{ ...S.input, width: 160, border: `1.5px solid ${COLORS.accent}` }}
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="e.g. Lahore"
             disabled={!!plannedEvent}
           />
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {SUGGESTED_PROMPTS.map((p) => (
+            <button
+              key={p}
+              onClick={() => send(p.replace(/^\p{Emoji}\s*/u, ""))}
+              disabled={sending}
+              style={{
+                background: COLORS.accentSoftBg,
+                border: `1.5px solid ${COLORS.accent}`,
+                color: COLORS.accentDark,
+                padding: "6px 12px",
+                borderRadius: 20,
+                fontSize: 12,
+                cursor: sending ? "not-allowed" : "pointer",
+                opacity: sending ? 0.6 : 1,
+                transition: "transform 0.12s, box-shadow 0.12s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "0 6px 14px rgba(194, 24, 91, 0.2)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              {p}
+            </button>
+          ))}
         </div>
 
         {plannedEvent && (
@@ -256,7 +295,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
                 alignSelf: m.role === "user" ? "flex-end" : "flex-start",
                 maxWidth: "80%",
                 background: m.role === "user" ? COLORS.accentSoftBg : COLORS.surfaceAlt,
-                border: `1px solid ${m.role === "user" ? COLORS.accent : COLORS.border}`,
+                border: `1.5px solid ${COLORS.accent}`,
                 color: COLORS.textPrimary,
                 borderRadius: 8,
                 padding: "10px 14px",
@@ -288,7 +327,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
             style={{
               ...S.btnSecondary,
               padding: "9px 14px",
-              borderColor: isRecording || isSpeaking ? COLORS.red : S.btnSecondary.border,
+              border: `1.5px solid ${isRecording || isSpeaking ? COLORS.red : COLORS.accent}`,
               color: isRecording || isSpeaking ? COLORS.red : S.btnSecondary.color,
               background: isRecording || isSpeaking ? COLORS.redSoftBg : S.btnSecondary.background,
             }}
@@ -299,7 +338,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
             {isSpeaking ? "⏸ Stop" : isRecording ? `⏹ ${recordSeconds}s` : "🎤"}
           </button>
           <input
-            style={{ ...S.input, flex: 1 }}
+            style={{ ...S.input, flex: 1, border: `1.5px solid ${COLORS.accent}` }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
@@ -308,7 +347,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
           />
           <button
             style={{ ...S.btnPrimary, opacity: sending || !input.trim() ? 0.5 : 1 }}
-            onClick={send}
+            onClick={() => send()}
             disabled={sending || !input.trim() || isRecording}
           >
             Send

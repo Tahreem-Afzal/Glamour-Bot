@@ -2,6 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
 import PageHeader from "./PageHeader.jsx";
 
+const OCCASION_PRESETS = [
+  { label: "🌙 Eid", text: "eid ke liye light pink frock, round neckline, half sleeves" },
+  { label: "💍 Wedding", text: "wedding guest outfit in maroon, embroidered, full sleeves" },
+  { label: "👖 Casual", text: "casual everyday wear, light cotton, simple neckline" },
+  { label: "🎉 Party", text: "party wear in navy blue, sequin detailing, sleeveless" },
+  { label: "💼 Office", text: "formal office wear in beige, modest cut, three-quarter sleeves" },
+];
+
 export default function ImageGenPanel() {
   const [garmentTypes, setGarmentTypes] = useState([]);
   const [garmentType, setGarmentType] = useState("frock");
@@ -12,6 +20,7 @@ export default function ImageGenPanel() {
   const [generating, setGenerating] = useState(false);
   const [resultUrl, setResultUrl] = useState(null);
   const [error, setError] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -75,12 +84,12 @@ export default function ImageGenPanel() {
       />
       <div style={S.pageNarrow}>
 
-      <div style={S.card}>
+      <div style={{ ...S.card, border: `3px solid ${COLORS.accent}`, width: "100%", boxSizing: "border-box" }}>
         <div style={S.formGroup}>
           <label style={S.label}>UNSTITCHED FABRIC / CLOTH PHOTO</label>
           <div
             style={{
-              border: `2px dashed ${COLORS.borderStrong}`,
+              border: `2px dashed ${COLORS.accent}`,
               borderRadius: 8,
               padding: 20,
               textAlign: "center",
@@ -89,18 +98,27 @@ export default function ImageGenPanel() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              background: dragOver ? COLORS.accentSoftBg : "transparent",
+              transition: "background 0.15s, border-color 0.15s",
             }}
             onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => e.preventDefault()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
             onDrop={(e) => {
               e.preventDefault();
+              setDragOver(false);
               handleFabricUpload(e.dataTransfer.files?.[0]);
             }}
           >
             {fabricPreview ? (
               <img src={fabricPreview} alt="Fabric" style={{ maxHeight: 220, maxWidth: "100%", borderRadius: 6 }} />
             ) : (
-              <span style={{ color: COLORS.textSecondary }}>Click or drag a fabric photo here</span>
+              <span style={{ color: dragOver ? COLORS.accentDark : COLORS.textSecondary, fontWeight: dragOver ? 600 : 400 }}>
+                {dragOver ? "Drop it here!" : "Click or drag a fabric photo here"}
+              </span>
             )}
             <input
               ref={fileInputRef}
@@ -112,10 +130,42 @@ export default function ImageGenPanel() {
           </div>
         </div>
 
+        <div style={S.formGroup}>
+          <label style={S.label}>OCCASION PRESETS — TAP TO FILL DETAILS</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {OCCASION_PRESETS.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => setDetailPrompt(p.text)}
+                style={{
+                  background: COLORS.accentSoftBg,
+                  border: `1.5px solid ${COLORS.accent}`,
+                  color: COLORS.accentDark,
+                  padding: "6px 12px",
+                  borderRadius: 20,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  transition: "transform 0.12s, box-shadow 0.12s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 6px 14px rgba(194, 24, 91, 0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div style={S.formGrid}>
           <div style={S.formGroup}>
             <label style={S.label}>GARMENT TYPE</label>
-            <select style={S.input} value={garmentType} onChange={(e) => setGarmentType(e.target.value)}>
+            <select style={{ ...S.input, border: `1.5px solid ${COLORS.accent}` }} value={garmentType} onChange={(e) => setGarmentType(e.target.value)}>
               {garmentTypes.map((g) => (
                 <option key={g} value={g}>
                   {g[0].toUpperCase() + g.slice(1)}
@@ -132,6 +182,7 @@ export default function ImageGenPanel() {
               step="0.05"
               value={fidelity}
               onChange={(e) => setFidelity(parseFloat(e.target.value))}
+              style={{ accentColor: COLORS.accent }}
             />
             <span style={{ fontSize: 11, color: COLORS.textSecondary }}>{fidelity.toFixed(2)} — higher = fabric color/print carries through more strongly</span>
           </div>
@@ -140,7 +191,7 @@ export default function ImageGenPanel() {
         <div style={S.formGroup}>
           <label style={S.label}>DETAILS (event, occasion, color, style — English or Roman Urdu)</label>
           <textarea
-            style={S.textarea}
+            style={{ ...S.textarea, border: `1.5px solid ${COLORS.accent}` }}
             value={detailPrompt}
             onChange={(e) => setDetailPrompt(e.target.value)}
             placeholder="e.g. eid ke liye light pink frock, round neckline, half sleeves"
@@ -167,7 +218,7 @@ export default function ImageGenPanel() {
         {resultUrl && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <p style={S.label}>RESULT</p>
-            <img src={resultUrl} style={{ width: "100%", borderRadius: 8, border: `1px solid ${COLORS.border}` }} alt="Generated outfit" />
+            <img src={resultUrl} style={{ width: "100%", borderRadius: 8, border: `2px solid ${COLORS.accent}` }} alt="Generated outfit" />
             <button style={S.btnSave} onClick={download}>
               ↓ Download Result
             </button>
