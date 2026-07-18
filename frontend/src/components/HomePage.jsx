@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { COLORS, FONT_DISPLAY } from "../styles.js";
 
 const STEPS = [
@@ -70,39 +69,13 @@ function PhoneMockup({ offset = 0, messages }) {
   );
 }
 
-export default function HomePage({ onNavigate }) {
-  const [lang, setLang] = useState("en");
+export default function HomePage({ onNavigate, lang = "en" }) {
   const c = COPY[lang];
   const isUrdu = lang === "ur";
 
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px 40px", position: "relative" }}>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 24 }}>
-          <div style={{ display: "flex", border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: "hidden" }}>
-            <button
-              onClick={() => setLang("en")}
-              style={{
-                border: "none", padding: "5px 14px", fontSize: 11, cursor: "pointer",
-                background: lang === "en" ? COLORS.accent : "none",
-                color: lang === "en" ? "#fff" : COLORS.textSecondary,
-              }}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLang("ur")}
-              style={{
-                border: "none", padding: "5px 14px", fontSize: 11, cursor: "pointer",
-                background: lang === "ur" ? COLORS.accent : "none",
-                color: lang === "ur" ? "#fff" : COLORS.textSecondary,
-              }}
-            >
-              اردو
-            </button>
-          </div>
-        </div>
-
         <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 40, alignItems: "center" }}>
           <div dir={isUrdu ? "rtl" : "ltr"}>
             <div

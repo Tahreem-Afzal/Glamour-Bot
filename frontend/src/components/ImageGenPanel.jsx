@@ -71,7 +71,7 @@ export default function ImageGenPanel() {
       <PageHeader
         eyebrow="Image generation"
         title="Turn unstitched fabric into a finished look."
-        subtitle="Upload a fabric or cloth photo, pick a garment shape, and describe the occasion — Stability AI generates a realistic preview using the fabric's own color and print."
+        subtitle="Upload a fabric or cloth photo, pick a garment shape, and describe the occasion — the model stitches a realistic preview using the fabric's own color and print."
       />
       <div style={S.pageNarrow}>
 

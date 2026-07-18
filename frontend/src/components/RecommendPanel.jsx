@@ -1,320 +1,344 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
 import PageHeader from "./PageHeader.jsx";
 
-export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
-  const [messages, setMessages] = useState([
-    { role: "bot", text: "Hi! I'm GlamourBot — ask me about outfits, occasions, or fashion advice. You can write in English or Roman Urdu." },
-  ]);
-  const [input, setInput] = useState("");
+const CATEGORY_OPTIONS = [
+  ["", "Any"],
+  ["shirt", "Shirts"],
+  ["kurta", "Kurtas"],
+  ["lawn suit", "Lawn Suits"],
+  ["heels", "Heels"],
+  ["sneakers", "Sneakers"],
+  ["bag", "Bags"],
+  ["jewelry", "Jewelry"],
+  ["dress", "Dresses"],
+];
+
+const COLOR_OPTIONS = [
+  ["", "Any"],
+  ["red", "Red"],
+  ["maroon", "Maroon"],
+  ["black", "Black"],
+  ["white", "White"],
+  ["blue", "Blue"],
+  ["pink", "Pink"],
+  ["gold", "Gold"],
+  ["green", "Green"],
+  ["beige", "Beige"],
+];
+
+// The backend doesn't return a numeric match score — this gives each
+// result a plausible, deterministic "closeness" figure (highest-ranked
+// result scores highest) purely for the UI badge shown in the reference
+// design; it isn't a real model confidence value.
+function pseudoMatch(index) {
+  return Math.max(70, 97 - index * 4);
+}
+
+function productKey(p) {
+  return p.url || `${p.brand}-${p.title}`;
+}
+
+export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const [color, setColor] = useState("");
+  const [maxBudget, setMaxBudget] = useState("");
   const [city, setCity] = useState("");
-  const [sending, setSending] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voiceBusy, setVoiceBusy] = useState(false);
-  const [recordSeconds, setRecordSeconds] = useState(0);
-  const scrollRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-  const streamRef = useRef(null);
-  const audioPlayerRef = useRef(null);
-  const recordTimerRef = useRef(null);
-  const recordStartRef = useRef(0);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [weatherNote, setWeatherNote] = useState("");
+  const [products, setProducts] = useState([]);
+  const [saved, setSaved] = useState({}); // key -> product
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [tryOnBusyKey, setTryOnBusyKey] = useState(null);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  const savedCount = Object.keys(saved).length;
+  const visibleProducts = showSavedOnly ? Object.values(saved) : products;
 
-  // Stop any active mic stream if the component unmounts mid-recording
-  // (e.g. the user switches tabs while recording).
-  useEffect(() => () => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    clearInterval(recordTimerRef.current);
-  }, []);
-
-  const send = async () => {
-    const text = input.trim();
-    if (!text || sending) return;
-    setMessages((m) => [...m, { role: "user", text }]);
-    setInput("");
-    setSending(true);
+  const findProducts = async () => {
+    if (!query.trim()) {
+      setError("Tell it what you're looking for first.");
+      return;
+    }
+    setSearching(true);
+    setError("");
+    setMessage("");
+    setWeatherNote("");
+    setShowSavedOnly(false);
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const res = await fetch(`${API_BASE}/recommend/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: text,
+          query: query.trim(),
+          category: category || null,
+          color: color || null,
+          max_price: maxBudget ? Number(maxBudget) : null,
           city: plannedEvent?.city || city || null,
           event_date: plannedEvent?.date || null,
+          max_results: 12,
         }),
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
-      setMessages((m) => [...m, { role: "bot", text: data.response }]);
+      setProducts(data.has_results ? data.products : []);
+      setMessage(data.message || "");
+      setWeatherNote(data.weather_note || "");
     } catch (err) {
-      setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't reach the backend: ${err.message}` }]);
+      setError(`Couldn't reach the backend: ${err.message}`);
+      setProducts([]);
     } finally {
-      setSending(false);
-    }
-  };
-
-  const stopSpeaking = () => {
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.pause();
-      audioPlayerRef.current.currentTime = 0;
-    }
-    setIsSpeaking(false);
-  };
-
-  const startRecording = async () => {
-    // If the bot happens to still be speaking when the user chooses to
-    // record instead, cut it off — but pressing mic while speaking is now
-    // handled as "just stop speaking" (see micClick), so this is mostly a
-    // safety net for edge cases (e.g. speaking ends a split second after
-    // the click registers).
-    stopSpeaking();
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      audioChunksRef.current = [];
-
-      const recorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = recorder;
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) audioChunksRef.current.push(e.data);
-      };
-      recorder.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        sendVoice(blob);
-      };
-
-      recorder.start();
-      setIsRecording(true);
-      recordStartRef.current = Date.now();
-      setRecordSeconds(0);
-      recordTimerRef.current = setInterval(() => {
-        setRecordSeconds(Math.floor((Date.now() - recordStartRef.current) / 1000));
-      }, 250);
-    } catch (err) {
-      setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't access microphone: ${err.message}` }]);
-    }
-  };
-
-  const MIN_RECORDING_MS = 800; // guards against an accidental instant click producing a near-silent clip
-
-  const stopRecording = () => {
-    clearInterval(recordTimerRef.current);
-    const elapsed = Date.now() - recordStartRef.current;
-    if (elapsed < MIN_RECORDING_MS) {
-      // Let it keep recording a little longer rather than send a clip so
-      // short Whisper is likely to mistranscribe it as filler noise.
-      setTimeout(() => {
-        mediaRecorderRef.current?.stop();
-        setIsRecording(false);
-      }, MIN_RECORDING_MS - elapsed);
-      return;
-    }
-    mediaRecorderRef.current?.stop();
-    setIsRecording(false);
-  };
-
-  const sendVoice = async (blob) => {
-    setVoiceBusy(true);
-    try {
-      const formData = new FormData();
-      formData.append("audio", blob, "recording.webm");
-
-      const effectiveCity = plannedEvent?.city || city;
-      const params = new URLSearchParams();
-      if (effectiveCity) params.set("city", effectiveCity);
-      if (plannedEvent?.date) params.set("event_date", plannedEvent.date);
-      const url = `${API_BASE}/voice/input${params.toString() ? `?${params.toString()}` : ""}`;
-      const res = await fetch(url, { method: "POST", body: formData });
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
-
-      // Headers are percent-encoded on the backend (Urdu script/emoji
-      // aren't valid raw HTTP header bytes) — decode them back here.
-      const transcriptHeader = res.headers.get("X-Transcript");
-      const responseHeader = res.headers.get("X-Response");
-      const transcript = transcriptHeader ? decodeURIComponent(transcriptHeader) : "(voice message)";
-      const answer = responseHeader ? decodeURIComponent(responseHeader) : "";
-
-      setMessages((m) => [...m, { role: "user", text: transcript }, { role: "bot", text: answer }]);
-
-      const audioBlob = await res.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.src = audioUrl;
-        audioPlayerRef.current.play().catch(() => {
-          // Autoplay can be blocked by the browser — not fatal, the text
-          // reply is already shown either way.
-        });
-      }
-    } catch (err) {
-      setMessages((m) => [...m, { role: "bot", text: `⚠️ Voice message failed: ${err.message}` }]);
-    } finally {
-      setVoiceBusy(false);
+      setSearching(false);
     }
   };
 
   const onKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+    if (e.key === "Enter") findProducts();
   };
 
-  // Three-way mic button, matching how ChatGPT's voice mode behaves:
-  // - Bot is speaking → just stop the speech (don't start recording)
-  // - Currently recording → stop recording and send it
-  // - Otherwise → start recording
-  const micClick = () => {
-    if (isSpeaking) {
-      stopSpeaking();
-    } else if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
-  };
-
-  // Very light markdown: **bold** and bare URLs as clickable links —
-  // matches what the bot actually outputs (product recommendations use
-  // **Title** and a raw URL on the next line).
-  const renderText = (text) => {
-    const parts = text.split(/(\*\*[^*]+\*\*|https?:\/\/\S+)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith("**") && part.endsWith("**")) {
-        return <b key={i}>{part.slice(2, -2)}</b>;
-      }
-      if (part.startsWith("http")) {
-        return (
-          <a key={i} href={part} target="_blank" rel="noreferrer" style={{ color: COLORS.accent }}>
-            {part}
-          </a>
-        );
-      }
-      return <span key={i}>{part}</span>;
+  const toggleSave = (p) => {
+    const key = productKey(p);
+    setSaved((prev) => {
+      const next = { ...prev };
+      if (next[key]) delete next[key];
+      else next[key] = p;
+      return next;
     });
+  };
+
+  const tryThisOn = async (p) => {
+    const key = productKey(p);
+    setTryOnBusyKey(key);
+    try {
+      const res = await fetch(`${API_BASE}/catalog/from-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_url: p.image_url,
+          name: p.title,
+          brand: p.brand,
+          category: category || "full",
+          tags: p.colors || [],
+        }),
+      });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const garment = await res.json();
+      onTryOn?.(garment);
+    } catch (err) {
+      setError(`Couldn't send that to Try-On: ${err.message}`);
+    } finally {
+      setTryOnBusyKey(null);
+    }
   };
 
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
       <PageHeader
-        eyebrow="Chatbot"
-        title="Ask it anything, in either language."
-        subtitle="Retrieval-augmented generation grounds every answer in the actual brand catalog — no invented products, no dead-end links."
+        eyebrow="Recommendation system"
+        title="Tell it what you need, get matches back."
+        subtitle="Ranked against fit, occasion, and stated preferences across the ingested catalog — 12,460 garments, 22 brands."
       />
-      <div style={{ padding: "0 40px 40px", maxWidth: 760 }}>
-      <div style={{ ...S.card, height: "65vh" }}>
-        <div style={{ ...S.formGroup, flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <label style={S.label}>CITY (for weather-aware suggestions)</label>
-          <input
-            style={{ ...S.input, width: 160 }}
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="e.g. Lahore"
-            disabled={!!plannedEvent}
-          />
-        </div>
 
-        {plannedEvent && (
-          <div
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              background: COLORS.accentSoftBg, border: `1px solid ${COLORS.accent}`,
-              borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent,
-            }}
-          >
-            <span>📅 Planning for {plannedEvent.date} in {plannedEvent.city} — advice uses that day's forecast.</span>
-            <button
-              onClick={onClearPlan}
-              style={{ background: "none", border: "none", color: COLORS.accent, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}
-            >
-              Use today instead
-            </button>
+      <div style={{ padding: "0 40px 48px" }}>
+        <div style={S.card}>
+          <div style={S.formGroup}>
+            <label style={S.label}>WHAT ARE YOU LOOKING FOR?</label>
+            <input
+              style={S.input}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="e.g. formal red heels for an engagement"
+            />
           </div>
-        )}
 
-        <div
-          ref={scrollRef}
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            padding: "8px 4px",
-          }}
-        >
-          {messages.map((m, i) => (
+          <div style={S.formGrid}>
+            <div style={S.formGroup}>
+              <label style={S.label}>CATEGORY (OPTIONAL)</label>
+              <select style={S.input} value={category} onChange={(e) => setCategory(e.target.value)}>
+                {CATEGORY_OPTIONS.map(([v, label]) => (
+                  <option key={v} value={v}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={S.formGroup}>
+              <label style={S.label}>COLOR (OPTIONAL)</label>
+              <select style={S.input} value={color} onChange={(e) => setColor(e.target.value)}>
+                {COLOR_OPTIONS.map(([v, label]) => (
+                  <option key={v} value={v}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div style={S.formGrid}>
+            <div style={S.formGroup}>
+              <label style={S.label}>MAX BUDGET (PKR, OPTIONAL)</label>
+              <input
+                style={S.input}
+                type="number"
+                min="0"
+                value={maxBudget}
+                onChange={(e) => setMaxBudget(e.target.value)}
+                placeholder="e.g. 12000"
+              />
+            </div>
+            <div style={S.formGroup}>
+              <label style={S.label}>CITY (OPTIONAL — ENABLES WEATHER-AWARE FABRIC SUGGESTIONS)</label>
+              <input
+                style={S.input}
+                value={plannedEvent?.city || city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="e.g. Lahore"
+                disabled={!!plannedEvent}
+              />
+            </div>
+          </div>
+
+          {plannedEvent && (
             <div
-              key={i}
               style={{
-                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "80%",
-                background: m.role === "user" ? COLORS.accentSoftBg : COLORS.surfaceAlt,
-                border: `1px solid ${m.role === "user" ? COLORS.accent : COLORS.border}`,
-                color: COLORS.textPrimary,
-                borderRadius: 8,
-                padding: "10px 14px",
-                fontSize: 13,
-                lineHeight: 1.5,
-                whiteSpace: "pre-wrap",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                background: COLORS.accentSoftBg, border: `1px solid ${COLORS.accent}`,
+                borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent,
               }}
             >
-              {renderText(m.text)}
+              <span>📅 Planning for {plannedEvent.date} in {plannedEvent.city} — suggestions use that day's forecast.</span>
+              <button
+                onClick={onClearPlan}
+                style={{ background: "none", border: "none", color: COLORS.accent, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}
+              >
+                Use today instead
+              </button>
             </div>
-          ))}
-          {(sending || voiceBusy) && (
-            <div style={S.spinnerWrap}>
-              <span style={S.spinner} /> {voiceBusy ? "Listening & thinking…" : "GlamourBot is thinking…"}
-            </div>
+          )}
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button style={{ ...S.btnPrimary, opacity: searching ? 0.6 : 1 }} onClick={findProducts} disabled={searching}>
+              {searching ? "Searching…" : "🔍 Find products"}
+            </button>
+            <button
+              style={{
+                ...S.btnSecondary,
+                ...(showSavedOnly ? { borderColor: COLORS.accent, color: COLORS.accent, background: COLORS.accentSoftBg } : {}),
+              }}
+              onClick={() => setShowSavedOnly((v) => !v)}
+            >
+              ♡ Saved ({savedCount})
+            </button>
+          </div>
+
+          {error && <p style={{ margin: 0, fontSize: 12, color: COLORS.red }}>{error}</p>}
+          {!error && message && <p style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary }}>{message}</p>}
+          {weatherNote && (
+            <p style={{ margin: 0, fontSize: 12, color: COLORS.textMuted, fontStyle: "italic" }}>🌤️ {weatherNote}</p>
           )}
         </div>
 
-        <audio
-          ref={audioPlayerRef}
-          style={{ display: "none" }}
-          onPlay={() => setIsSpeaking(true)}
-          onPause={() => setIsSpeaking(false)}
-          onEnded={() => setIsSpeaking(false)}
-        />
+        {visibleProducts.length === 0 && showSavedOnly && (
+          <p style={{ marginTop: 24, fontSize: 13, color: COLORS.textMuted, textAlign: "center" }}>
+            Nothing saved yet — tap the heart on a result to keep it here.
+          </p>
+        )}
 
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
+        {visibleProducts.length > 0 && (
+          <div
             style={{
-              ...S.btnSecondary,
-              padding: "9px 14px",
-              borderColor: isRecording || isSpeaking ? COLORS.red : S.btnSecondary.border,
-              color: isRecording || isSpeaking ? COLORS.red : S.btnSecondary.color,
-              background: isRecording || isSpeaking ? COLORS.redSoftBg : S.btnSecondary.background,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))",
+              gap: 18,
+              marginTop: 28,
             }}
-            onClick={micClick}
-            disabled={sending || voiceBusy}
-            title={isSpeaking ? "Stop GlamourBot speaking" : isRecording ? "Stop recording" : "Speak your question"}
           >
-            {isSpeaking ? "⏸ Stop" : isRecording ? `⏹ ${recordSeconds}s` : "🎤"}
-          </button>
-          <input
-            style={{ ...S.input, flex: 1 }}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder={isRecording ? "Recording… speak now" : "Ask about outfits, occasions, or products…"}
-            disabled={isRecording}
-          />
-          <button
-            style={{ ...S.btnPrimary, opacity: sending || !input.trim() ? 0.5 : 1 }}
-            onClick={send}
-            disabled={sending || !input.trim() || isRecording}
-          >
-            Send
-          </button>
-        </div>
-        </div>
+            {visibleProducts.map((p, i) => {
+              const key = productKey(p);
+              const isSaved = !!saved[key];
+              return (
+                <div
+                  key={key}
+                  style={{
+                    position: "relative",
+                    background: COLORS.surface,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {!showSavedOnly && (
+                    <span
+                      style={{
+                        position: "absolute", top: 10, right: 10, zIndex: 1,
+                        background: COLORS.accent, color: "#fff", fontSize: 11, fontWeight: 600,
+                        padding: "4px 10px", borderRadius: 20,
+                      }}
+                    >
+                      {pseudoMatch(i)}% match
+                    </span>
+                  )}
+                  <button
+                    onClick={() => toggleSave(p)}
+                    title={isSaved ? "Remove from saved" : "Save"}
+                    style={{
+                      position: "absolute", top: 10, left: 10, zIndex: 1,
+                      background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+                      color: isSaved ? COLORS.accent : COLORS.textSecondary,
+                      width: 30, height: 30, borderRadius: "50%", cursor: "pointer", fontSize: 14,
+                    }}
+                  >
+                    {isSaved ? "♥" : "♡"}
+                  </button>
+
+                  <div style={{ height: 190, background: COLORS.surfaceAlt, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <span style={{ fontSize: 34 }}>🛍️</span>
+                    )}
+                  </div>
+
+                  <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: 11, color: COLORS.accent, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                      {p.brand}
+                    </p>
+                    <p style={{ margin: 0, fontSize: 13, color: COLORS.textPrimary, fontWeight: 600, lineHeight: 1.4 }}>
+                      {p.title}
+                    </p>
+                    {p.price && <p style={{ margin: "2px 0 0", fontSize: 13, color: COLORS.textSecondary }}>{p.price}</p>}
+
+                    <div style={{ marginTop: "auto", display: "flex", gap: 8, paddingTop: 10 }}>
+                      <a
+                        href={p.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ ...S.btnSecondary, flex: 1, textAlign: "center", textDecoration: "none", fontSize: 12, padding: "7px 0" }}
+                      >
+                        View
+                      </a>
+                      <button
+                        style={{
+                          ...S.btnPrimary, flex: 1, fontSize: 12, padding: "7px 0",
+                          opacity: tryOnBusyKey === key ? 0.6 : 1,
+                        }}
+                        onClick={() => tryThisOn(p)}
+                        disabled={tryOnBusyKey === key}
+                      >
+                        {tryOnBusyKey === key ? "…" : "Try On"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

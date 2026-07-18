@@ -28,6 +28,11 @@ export default function App() {
   // Ahead" tab — Chatbot and Recommendations both pick this up so advice
   // is based on that day's forecast instead of silently using today's.
   const [plannedEvent, setPlannedEvent] = useState(null); // { city, date } | null
+  // The home page's EN/اردو toggle lives in the header (matching the
+  // reference design), so it's lifted up here rather than kept local to
+  // HomePage.
+  const [lang, setLang] = useState("en");
+  const isHome = tab === "home";
 
   useEffect(() => {
     fetch(`${API_BASE}/health`)
@@ -56,43 +61,78 @@ export default function App() {
             GLAMOUR<span style={{ color: COLORS.accent }}>AI</span>
           </span>
         </div>
-        <nav style={S.nav}>
-          {TABS.map(([t, label]) => (
-            <button key={t} style={{ ...S.navBtn, ...(tab === t ? S.navBtnActive : {}) }} onClick={() => setTab(t)}>
-              {label}
-            </button>
-          ))}
-        </nav>
+        {!isHome && (
+          <nav style={S.nav}>
+            {TABS.map(([t, label]) => (
+              <button key={t} style={{ ...S.navBtn, ...(tab === t ? S.navBtnActive : {}) }} onClick={() => setTab(t)}>
+                {label}
+              </button>
+            ))}
+          </nav>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <WeatherWidget plannedEvent={plannedEvent} onPlanChange={setPlannedEvent} />
-          <div style={S.statusPill}>
-            <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
-            <span>{statusText}</span>
-          </div>
+          {isHome ? (
+            <div style={{ display: "flex", border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: "hidden" }}>
+              <button
+                onClick={() => setLang("en")}
+                style={{
+                  border: "none",
+                  padding: "5px 14px",
+                  fontSize: 11,
+                  cursor: "pointer",
+                  background: lang === "en" ? COLORS.accent : "none",
+                  color: lang === "en" ? "#fff" : COLORS.textSecondary,
+                }}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLang("ur")}
+                style={{
+                  border: "none",
+                  padding: "5px 14px",
+                  fontSize: 11,
+                  cursor: "pointer",
+                  background: lang === "ur" ? COLORS.accent : "none",
+                  color: lang === "ur" ? "#fff" : COLORS.textSecondary,
+                }}
+              >
+                اردو
+              </button>
+            </div>
+          ) : (
+            <div style={S.statusPill}>
+              <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
+              <span>{statusText}</span>
+            </div>
+          )}
         </div>
       </header>
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {tab === "home" && <HomePage onNavigate={setTab} />}
-        {tab === "chatbot" && <ChatbotPanel plannedEvent={plannedEvent} onClearPlan={() => setPlannedEvent(null)} />}
-        {tab === "recommend" && (
-          <RecommendPanel
-            plannedEvent={plannedEvent}
-            onClearPlan={() => setPlannedEvent(null)}
-            onTryOn={(garment) => {
-              setPendingTryOnGarment(garment);
-              setTab("tryon");
-            }}
-          />
-        )}
-        {tab === "imagegen" && <ImageGenPanel />}
-        {tab === "tryon" && (
-          <TryOnPanel
-            pendingGarment={pendingTryOnGarment}
-            onConsumePending={() => setPendingTryOnGarment(null)}
-          />
-        )}
-        {tab === "about" && <AboutPage />}
+        <div key={tab} className="glamourai-page-transition">
+          {tab === "home" && <HomePage onNavigate={setTab} lang={lang} onLangChange={setLang} />}
+          {tab === "chatbot" && <ChatbotPanel plannedEvent={plannedEvent} onClearPlan={() => setPlannedEvent(null)} />}
+          {tab === "recommend" && (
+            <RecommendPanel
+              plannedEvent={plannedEvent}
+              onClearPlan={() => setPlannedEvent(null)}
+              onTryOn={(garment) => {
+                setPendingTryOnGarment(garment);
+                setTab("tryon");
+              }}
+            />
+          )}
+          {tab === "imagegen" && <ImageGenPanel />}
+          {tab === "tryon" && (
+            <TryOnPanel
+              pendingGarment={pendingTryOnGarment}
+              onConsumePending={() => setPendingTryOnGarment(null)}
+            />
+          )}
+          {tab === "about" && <AboutPage />}
+        </div>
       </div>
     </div>
   );

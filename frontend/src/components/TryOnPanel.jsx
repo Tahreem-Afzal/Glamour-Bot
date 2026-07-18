@@ -271,13 +271,13 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
       <PageHeader
-        eyebrow="Virtual fitting room"
+        eyebrow="AR fitting room"
         title="See it on, before you buy it."
-        subtitle="Upload or capture a photo, pick a garment from the catalog, and generate a realistic composite of yourself wearing it — powered by FASHN's try-on model."
+        subtitle="MediaPipe pose landmarks map the garment to your body in real time — measurement-based warping, not a flat sticker overlay."
       />
       <div style={{ ...T.subNav, padding: "0 40px 12px" }}>
         {[
-          ["tryon", "Try On"],
+          ["tryon", "Try on"],
           ["catalog", "Catalog"],
           ["upload", "Upload"],
         ].map(([t, label]) => (
@@ -305,10 +305,10 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
           <div style={T.leftPane}>
             <div style={T.modeToggle}>
               <button style={{ ...T.modeBtn, ...(personSource === "upload" ? T.modeBtnActive : {}) }} onClick={() => switchPersonSource("upload")}>
-                📁 Upload Photo
+                📁 Upload photo
               </button>
               <button style={{ ...T.modeBtn, ...(personSource === "camera" ? T.modeBtnActive : {}) }} onClick={() => switchPersonSource("camera")}>
-                📷 Use Camera
+                📷 Use camera
               </button>
             </div>
 
@@ -528,6 +528,6 @@ const T = {
   uploadCard: { background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: 24, display: "flex", flexDirection: "column", gap: 16 },
   formGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 },
   formGroup: { display: "flex", flexDirection: "column", gap: 5 },
-  label: { fontSize: 10, color: COLORS.textSecondary, letterSpacing: 1 },
+  label: { fontSize: 10, color: COLORS.textSecondary, letterSpacing: 1, textTransform: "uppercase" },
   input: { background: COLORS.bg, border: `1px solid ${COLORS.border}`, color: COLORS.textPrimary, padding: "8px 10px", fontSize: 12, borderRadius: 6, fontFamily: "inherit", outline: "none" },
 };

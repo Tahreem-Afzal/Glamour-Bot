@@ -3,29 +3,31 @@
 // (e.g. https://glamourai-backend.onrender.com) before building.
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
-// Editorial "blush & raspberry" palette — warm, light, fashion-forward.
+// Editorial "cream & raspberry" palette — warm terracotta cream with a deep
+// magenta-raspberry accent, matched from the approved reference designs.
 export const FONT_DISPLAY = "'Lora', Georgia, serif";
 
 export const COLORS = {
-  bg: "#FFF8F3",
+  bg: "#FBE9DA",
   surface: "#FFFFFF",
-  surfaceAlt: "#FFF1E7",
-  border: "#F1DFD0",
-  borderStrong: "#E8C9D8",
-  textPrimary: "#2E2230",
-  textSecondary: "#9A8790",
-  textMuted: "#C2AEB6",
-  accent: "#C6427D",
-  accentDark: "#9E2F63",
-  accentSoftBg: "#FBE4EE",
+  surfaceAlt: "#F3E3CD",
+  border: "#EAD6C2",
+  borderStrong: "#E9B9CE",
+  textPrimary: "#2A2019",
+  textSecondary: "#8C7A6E",
+  textMuted: "#B7A796",
+  accent: "#C2185B",
+  accentDark: "#96123F",
+  accentSoftBg: "#F7D9E4",
   gold: "#D9A441",
   goldSoftBg: "#FBF0DC",
-  green: "#3E9B6D",
-  greenSoftBg: "#E6F5EC",
-  red: "#E2484D",
-  redSoftBg: "#FDECEC",
+  green: "#2F7D3D",
+  greenSoftBg: "#DEF3E1",
+  red: "#D5393D",
+  redSoftBg: "#FBE1E1",
   purple: "#8E5FBE",
   purpleSoftBg: "#F1E9FA",
+  cardBg: "#FDEEE1",
 };
 
 export const S = {
@@ -41,8 +43,8 @@ export const S = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "12px 24px",
-    background: COLORS.surface,
+    padding: "16px 28px",
+    background: COLORS.bg,
     borderBottom: `1px solid ${COLORS.border}`,
     flexShrink: 0,
     flexWrap: "wrap",
@@ -90,16 +92,16 @@ export const S = {
   pageNarrow: { flex: 1, overflowY: "auto", padding: "22px 28px", maxWidth: 760, margin: "0 auto", width: "100%" },
   pageTitle: { fontSize: 16, letterSpacing: 3, color: COLORS.accent, margin: "0 0 18px" },
   card: {
-    background: COLORS.surface,
+    background: COLORS.cardBg,
     border: `1px solid ${COLORS.border}`,
     borderRadius: 12,
     padding: 20,
     display: "flex",
     flexDirection: "column",
     gap: 14,
-    boxShadow: "0 2px 10px rgba(198, 66, 125, 0.05)",
+    boxShadow: "0 2px 10px rgba(194, 24, 91, 0.05)",
   },
-  label: { fontSize: 10, color: COLORS.textSecondary, letterSpacing: 1 },
+  label: { fontSize: 10, color: COLORS.textSecondary, letterSpacing: 1, textTransform: "uppercase" },
   input: {
     background: COLORS.bg,
     border: `1px solid ${COLORS.border}`,
@@ -166,6 +168,19 @@ export const S = {
 if (typeof document !== "undefined" && !document.getElementById("glamourai-keyframes")) {
   const style = document.createElement("style");
   style.id = "glamourai-keyframes";
-  style.textContent = "@keyframes spin { to { transform: rotate(360deg); } }";
+  style.textContent = `
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes glamourai-page-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .glamourai-page-transition {
+      animation: glamourai-page-in 0.32s ease both;
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+    }
+  `;
   document.head.appendChild(style);
 }
