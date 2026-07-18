@@ -212,8 +212,9 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
     <div style={{ flex: 1, width: "100%", overflowY: "auto" }}>
       <PageHeader
         eyebrow="Chatbot"
-        title="Ask it anything, in either language."
-        subtitle="Retrieval-augmented generation grounds every answer in the actual brand catalog — no invented products, no dead-end links."
+        eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
+        title="Share your event, choose the date, and let GlamourAI create a complete, professionally styled look just for you."
+        subtitle="From outfits and shoes to accessories and makeup, every recommendation is thoughtfully curated to match the occasion. Available in English and Urdu."
       />
       <div style={{ padding: "0 clamp(16px, 6vw, 100px) 40px", width: "100%", boxSizing: "border-box" }}>
       <div style={{ ...S.card, height: "65vh", width: "100%", boxSizing: "border-box", border: `3px solid ${COLORS.accent}` }}>

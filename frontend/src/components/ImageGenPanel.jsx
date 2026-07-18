@@ -71,6 +71,7 @@ export default function ImageGenPanel() {
     <div style={{ flex: 1, overflowY: "auto" }}>
       <PageHeader
         eyebrow="Image generation"
+        eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
         title="Turn unstitched fabric into a finished look."
         subtitle="Upload a fabric or cloth photo, pick a garment shape, and describe the occasion — the model stitches a realistic preview using the fabric's own color and print."
       />

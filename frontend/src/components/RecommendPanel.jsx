@@ -140,8 +140,9 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
     <div style={{ flex: 1, overflowY: "auto" }}>
       <PageHeader
         eyebrow="Recommendation system"
+        eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
         title="Tell it what you need, get matches back."
-        subtitle="Ranked against fit, occasion, and stated preferences across the ingested catalog — 12,460 garments, 22 brands."
+        subtitle="Discover dresses, accessories, and shoes curated just for you. Simply describe what you're looking for, choose your preferred color and price range, and let us bring you personalized recommendations that match your unique style."
       />
 
       <div style={{ padding: "0 clamp(16px, 6vw, 100px) 48px" }}>
