@@ -2,6 +2,7 @@ fastapi==0.111.0
 uvicorn[standard]==0.29.0
 python-dotenv==1.0.1
 pydantic
+pydantic[email]
 python-multipart==0.0.9
 
 # Try-on: garment catalog DB + image handling
@@ -28,3 +29,9 @@ numpy
 # Chatbot: LLM + voice
 groq
 gtts
+
+# Auth: password hashing, JWT issue/verify, Google sign-in token verification
+passlib[bcrypt]
+bcrypt==4.0.1
+python-jose[cryptography]
+google-auth

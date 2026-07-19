@@ -1,6 +1,4 @@
-"""
-database.py — SQLAlchemy setup (SQLite by default; override with DATABASE_URL env var)
-"""
+"""database.py — SQLAlchemy setup (SQLite by default; override with DATABASE_URL env var)"""
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
@@ -20,6 +18,7 @@ class Base(DeclarativeBase):
 
 def init_db():
     from models.garment import Garment  # noqa: F401 — registers model
+    from models.user import User        # noqa: F401 — registers model
     Base.metadata.create_all(bind=engine)
 
 

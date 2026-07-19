@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
+import { apiFetch } from "../api.js";
 import PageHeader from "./PageHeader.jsx";
 
 export default function ImageGenPanel() {
@@ -16,7 +17,7 @@ export default function ImageGenPanel() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/garment-types`)
+    apiFetch(`${API_BASE}/garment-types`)
       .then((r) => r.json())
       .then((d) => setGarmentTypes(d.garment_types || []))
       .catch(() => setGarmentTypes(["frock", "maxi", "shirt", "trouser", "palazzo"]));
@@ -45,7 +46,7 @@ export default function ImageGenPanel() {
       fd.append("detail_prompt", detailPrompt);
       fd.append("fidelity", String(fidelity));
 
-      const res = await fetch(`${API_BASE}/generate-outfit`, { method: "POST", body: fd });
+      const res = await apiFetch(`${API_BASE}/generate-outfit`, { method: "POST", body: fd });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: `Server returned ${res.status}` }));
         throw new Error(err.error || `Server returned ${res.status}`);

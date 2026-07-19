@@ -18,6 +18,10 @@ services:
         sync: false
       - key: GROQ_API_KEY
         sync: false
+      - key: JWT_SECRET_KEY
+        sync: false         # set manually — a long random string, e.g. `openssl rand -hex 32`
+      - key: GOOGLE_CLIENT_ID
+        sync: false         # set manually — from Google Cloud Console (OAuth Client ID)
       - key: FRONTEND_URL
         fromService:
           type: web
@@ -37,6 +41,8 @@ services:
           type: web
           name: glamourai-backend
           envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false         # same Google Client ID as the backend — safe to expose, it's a public ID not a secret
     routes:
       - type: rewrite
         source: /*

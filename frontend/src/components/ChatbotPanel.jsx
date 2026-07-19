@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
+import { apiFetch } from "../api.js";
 import PageHeader from "./PageHeader.jsx";
 
 const SUGGESTED_PROMPTS = [
@@ -47,7 +48,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
     setInput("");
     setSending(true);
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const res = await apiFetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -139,7 +140,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
       if (effectiveCity) params.set("city", effectiveCity);
       if (plannedEvent?.date) params.set("event_date", plannedEvent.date);
       const url = `${API_BASE}/voice/input${params.toString() ? `?${params.toString()}` : ""}`;
-      const res = await fetch(url, { method: "POST", body: formData });
+      const res = await apiFetch(url, { method: "POST", body: formData });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
 
       // Headers are percent-encoded on the backend (Urdu script/emoji

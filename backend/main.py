@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -20,6 +20,8 @@ from routers.recommend_router import router as recommend_router
 from routers.imagegen_router import router as imagegen_router
 from routers.catalog_router import router as catalog_router, GARMENT_DIR
 from routers.tryon_router import router as tryon_router
+from routers.auth_router import router as auth_router
+from services.auth import get_current_user
 from models.database import init_db
 
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +47,7 @@ async def lifespan(app: FastAPI):
     os.makedirs(GARMENT_DIR, exist_ok=True)
     os.makedirs(GENERATED_DIR, exist_ok=True)
 
-    # Try-on garment catalog DB
+    # Try-on garment catalog DB + users table
     init_db()
     logger.info("✅ Garment catalog DB initialized.")
 
@@ -60,6 +62,10 @@ async def lifespan(app: FastAPI):
         logger.warning("⚠️  STABILITY_API_KEY not set — image generation will fail until configured.")
     if not os.environ.get("GROQ_API_KEY"):
         logger.warning("⚠️  GROQ_API_KEY not set — chatbot and prompt enhancement will fail until configured.")
+    if not os.environ.get("JWT_SECRET_KEY"):
+        logger.warning("⚠️  JWT_SECRET_KEY not set — set this to a long random string before deploying, or all logins are insecure.")
+    if not os.environ.get("GOOGLE_CLIENT_ID"):
+        logger.warning("⚠️  GOOGLE_CLIENT_ID not set — Google sign-in will fail until configured.")
 
     yield
 
@@ -90,12 +96,18 @@ app.add_middleware(
 app.mount("/garments", StaticFiles(directory=GARMENT_DIR), name="garments")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
 
-# Routers
-app.include_router(chat_router,      tags=["Chatbot"])
-app.include_router(recommend_router, prefix="/recommend", tags=["Recommendations"])
-app.include_router(imagegen_router,  tags=["Image Generation"])
-app.include_router(catalog_router,   prefix="/catalog", tags=["Catalog"])
-app.include_router(tryon_router,     prefix="/tryon",   tags=["Try-On"])
+# Auth — open (this is where a token is obtained in the first place)
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+
+# Every other router now requires a valid JWT (the whole app is gated
+# behind login). Depends(get_current_user) runs before the route body,
+# so an unauthenticated request gets a 401 before any business logic runs.
+_auth_dep = [Depends(get_current_user)]
+app.include_router(chat_router,      tags=["Chatbot"],        dependencies=_auth_dep)
+app.include_router(recommend_router, prefix="/recommend", tags=["Recommendations"], dependencies=_auth_dep)
+app.include_router(imagegen_router,  tags=["Image Generation"], dependencies=_auth_dep)
+app.include_router(catalog_router,   prefix="/catalog", tags=["Catalog"], dependencies=_auth_dep)
+app.include_router(tryon_router,     prefix="/tryon",   tags=["Try-On"], dependencies=_auth_dep)
 
 
 @app.get("/health")
@@ -105,4 +117,6 @@ async def health():
         "fashn_configured": bool(os.environ.get("FASHN_API_KEY")),
         "stability_configured": bool(os.environ.get("STABILITY_API_KEY")),
         "groq_configured": bool(os.environ.get("GROQ_API_KEY")),
+        "auth_configured": bool(os.environ.get("JWT_SECRET_KEY")),
+        "google_signin_configured": bool(os.environ.get("GOOGLE_CLIENT_ID")),
     }

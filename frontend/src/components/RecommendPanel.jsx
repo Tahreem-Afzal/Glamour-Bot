@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { API_BASE, S, COLORS } from "../styles.js";
+import { apiFetch } from "../api.js";
 import PageHeader from "./PageHeader.jsx";
 
 const CATEGORY_OPTIONS = [
@@ -71,7 +72,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
     setWeatherNote("");
     setShowSavedOnly(false);
     try {
-      const res = await fetch(`${API_BASE}/recommend/`, {
+      const res = await apiFetch(`${API_BASE}/recommend/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -115,7 +116,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
     const key = productKey(p);
     setTryOnBusyKey(key);
     try {
-      const res = await fetch(`${API_BASE}/catalog/from-url`, {
+      const res = await apiFetch(`${API_BASE}/catalog/from-url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { API_BASE, COLORS } from "../styles.js";
+import { apiFetch } from "../api.js";
 import BeforeAfterSlider from "./BeforeAfterSlider.jsx";
 import PageHeader from "./PageHeader.jsx";
 
@@ -38,7 +39,7 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
   }, []);
 
   const fetchGarments = useCallback(() => {
-    fetch(`${API_BASE}/catalog/`)
+    apiFetch(`${API_BASE}/catalog/`)
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => setGarments(Array.isArray(data) ? data : []))
       .catch(() => showNotification("Could not reach the backend to load garments.", "error"));
@@ -155,7 +156,7 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
       const fd = new FormData();
       fd.append("person_image", personFile, "person.jpg");
       fd.append("garment_id", String(selected.id));
-      const res = await fetch(`${API_BASE}/tryon/generate`, { method: "POST", body: fd });
+      const res = await apiFetch(`${API_BASE}/tryon/generate`, { method: "POST", body: fd });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || res.statusText);
@@ -191,7 +192,7 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
     fd.append("category", uploadForm.category);
     fd.append("tags", JSON.stringify(uploadForm.tags.split(",").map((t) => t.trim()).filter(Boolean)));
     try {
-      const res = await fetch(`${API_BASE}/catalog/`, { method: "POST", body: fd });
+      const res = await apiFetch(`${API_BASE}/catalog/`, { method: "POST", body: fd });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || res.statusText);

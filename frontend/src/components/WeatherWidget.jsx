@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { API_BASE, COLORS } from "../styles.js";
+import { apiFetch } from "../api.js";
 
 const WEATHER_ICONS = {
   "clear sky": "☀️", "mostly clear": "🌤️", "partly cloudy": "⛅", "overcast": "☁️",
@@ -55,7 +56,7 @@ export default function WeatherWidget({ plannedEvent, onPlanChange }) {
   const fetchWeather = (city) => {
     setLoading(true);
     setError(false);
-    fetch(`${API_BASE}/weather?city=${encodeURIComponent(city)}`)
+    apiFetch(`${API_BASE}/weather?city=${encodeURIComponent(city)}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
         if (!data.ok) throw new Error("not ok");
@@ -68,7 +69,7 @@ export default function WeatherWidget({ plannedEvent, onPlanChange }) {
   const fetchForecast = () => {
     setLoading(true);
     setError(false);
-    fetch(`${API_BASE}/weather/forecast?city=${encodeURIComponent(planCity)}&date=${planDate}`)
+    apiFetch(`${API_BASE}/weather/forecast?city=${encodeURIComponent(planCity)}&date=${planDate}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
         if (!data.ok) throw new Error(data.reason || "not ok");
