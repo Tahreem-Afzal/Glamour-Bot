@@ -79,6 +79,7 @@ export default function App() {
   const [plannedEvent, setPlannedEvent] = useState(null); // { city, date } | null
   const [lang, setLang] = useState("en");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const isHome = tab === "home";
 
   useEffect(() => {
     if (authStatus !== "authed") return;
@@ -121,14 +122,18 @@ export default function App() {
             GLAMOUR<span style={{ color: COLORS.accent }}>AI</span>
           </span>
         </div>
-        <nav className="glamourai-nav" style={S.nav}>
-          {TABS.map(([t, en, ur]) => (
-            <button key={t} style={{ ...S.navBtn, ...(tab === t ? S.navBtnActive : {}) }} onClick={() => setTab(t)}>
-              {lang === "ur" ? ur : en}
-            </button>
-          ))}
-        </nav>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {isHome ? (
+          <div />
+        ) : (
+          <nav className="glamourai-nav" style={S.nav}>
+            {TABS.map(([t, en, ur]) => (
+              <button key={t} style={{ ...S.navBtn, ...(tab === t ? S.navBtnActive : {}) }} onClick={() => setTab(t)}>
+                {lang === "ur" ? ur : en}
+              </button>
+            ))}
+          </nav>
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, justifySelf: "end" }}>
           <WeatherWidget plannedEvent={plannedEvent} onPlanChange={setPlannedEvent} />
           <div style={S.statusPill}>
             <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
