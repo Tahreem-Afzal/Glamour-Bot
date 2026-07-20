@@ -7,6 +7,7 @@ const CATEGORY_OPTIONS = [
   ["", "Any", "کوئی بھی"],
   ["shirt", "Shirts", "شرٹس"],
   ["kurta", "Kurtas", "کرتے"],
+  ["jeans", "Jeans", "جینز"],
   ["lawn suit", "Lawn Suits", "لان سوٹ"],
   ["heels", "Heels", "ہیلز"],
   ["sneakers", "Sneakers", "اسنیکرز"],
@@ -14,6 +15,23 @@ const CATEGORY_OPTIONS = [
   ["jewelry", "Jewelry", "زیورات"],
   ["dress", "Dresses", "ڈریسز"],
 ];
+
+// Try-On's catalog only understands three garment-shape buckets
+// (upper/lower/full — that's what drives its Tops/Bottoms/Dresses filter
+// chips and the Full-Outfit top+bottom picker). Recommendations' search
+// category uses shopping-style labels instead, so map between the two
+// whenever a result gets sent to Try-On via tryThisOn() below.
+const SEARCH_TO_TRYON_CATEGORY = {
+  shirt: "upper",
+  kurta: "upper",
+  jeans: "lower",
+  "lawn suit": "full",
+  dress: "full",
+  heels: "full",
+  sneakers: "full",
+  bag: "full",
+  jewelry: "full",
+};
 
 const COLOR_OPTIONS = [
   ["", "Any", "کوئی بھی"],
@@ -55,6 +73,7 @@ const T = {
     save: "Save",
     view: "View",
     tryOn: "Try On",
+    groupLabels: { clothing: "Clothing", bags: "Bags", footwear: "Footwear", eyewear: "Eyewear", jewelry: "Jewelry" },
   },
   ur: {
     eyebrow: "تجاویز کا نظام",
@@ -82,6 +101,7 @@ const T = {
     save: "محفوظ کریں",
     view: "دیکھیں",
     tryOn: "ٹرائی آن",
+    groupLabels: { clothing: "لباس", bags: "بیگز", footwear: "جوتے", eyewear: "چشمے", jewelry: "زیورات" },
   },
 };
 
@@ -111,6 +131,8 @@ export default function RecommendPanel({ lang = "en", plannedEvent, onClearPlan,
   const [message, setMessage] = useState("");
   const [weatherNote, setWeatherNote] = useState("");
   const [products, setProducts] = useState([]);
+  const [isMulti, setIsMulti] = useState(false);
+  const [groups, setGroups] = useState([]);
   const [saved, setSaved] = useState({}); // key -> product
   const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [tryOnBusyKey, setTryOnBusyKey] = useState(null);
@@ -148,11 +170,15 @@ export default function RecommendPanel({ lang = "en", plannedEvent, onClearPlan,
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
       setProducts(data.has_results ? data.products : []);
+      setIsMulti(!!data.is_multi);
+      setGroups(data.is_multi ? data.groups : []);
       setMessage(data.message || "");
       setWeatherNote(data.weather_note || "");
     } catch (err) {
       setError(t.couldntReach(err.message));
       setProducts([]);
+      setIsMulti(false);
+      setGroups([]);
     } finally {
       setSearching(false);
     }
@@ -183,7 +209,7 @@ export default function RecommendPanel({ lang = "en", plannedEvent, onClearPlan,
           image_url: p.image_url,
           name: p.title,
           brand: p.brand,
-          category: category || "full",
+          category: SEARCH_TO_TRYON_CATEGORY[category] || "full",
           tags: p.colors || [],
         }),
       });
@@ -197,6 +223,99 @@ export default function RecommendPanel({ lang = "en", plannedEvent, onClearPlan,
     }
   };
 
+  const renderProductGrid = (list, showMatchBadge) => (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))",
+        gap: 18,
+        marginTop: 12,
+      }}
+    >
+      {list.map((p, i) => {
+        const key = productKey(p);
+        const isSaved = !!saved[key];
+        return (
+          <div
+            key={key}
+            style={{
+              position: "relative",
+              background: COLORS.surface,
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: 14,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {showMatchBadge && (
+              <span
+                style={{
+                  position: "absolute", top: 10, [isUrdu ? "left" : "right"]: 10, zIndex: 1,
+                  background: COLORS.accent, color: "#fff", fontSize: 11, fontWeight: 600,
+                  padding: "4px 10px", borderRadius: 20,
+                }}
+              >
+                {t.match(pseudoMatch(i))}
+              </span>
+            )}
+            <button
+              onClick={() => toggleSave(p)}
+              title={isSaved ? t.removeSaved : t.save}
+              style={{
+                position: "absolute", top: 10, [isUrdu ? "right" : "left"]: 10, zIndex: 1,
+                background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+                color: isSaved ? COLORS.accent : COLORS.textSecondary,
+                width: 30, height: 30, borderRadius: "50%", cursor: "pointer", fontSize: 14,
+              }}
+            >
+              {isSaved ? "♥" : "♡"}
+            </button>
+
+            <div style={{ height: 190, background: COLORS.surfaceAlt, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              {p.image_url ? (
+                <img src={p.image_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <span style={{ fontSize: 34 }}>🛍️</span>
+              )}
+            </div>
+
+            <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+              <p style={{ margin: 0, fontSize: 11, color: COLORS.accent, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                {p.brand}
+              </p>
+              <p style={{ margin: 0, fontSize: 13, color: COLORS.textPrimary, fontWeight: 600, lineHeight: 1.4 }}>
+                {p.title}
+              </p>
+              {p.price && <p style={{ margin: "2px 0 0", fontSize: 13, color: COLORS.textSecondary }}>{p.price}</p>}
+
+              <div style={{ marginTop: "auto", display: "flex", gap: 8, paddingTop: 10 }}>
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ ...S.btnSecondary, flex: 1, textAlign: "center", textDecoration: "none", fontSize: 12, padding: "7px 0" }}
+                >
+                  {t.view}
+                </a>
+                <button
+                  style={{
+                    ...S.btnPrimary, flex: 1, fontSize: 12, padding: "7px 0",
+                    opacity: tryOnBusyKey === key ? 0.6 : 1,
+                  }}
+                  onClick={() => tryThisOn(p)}
+                  disabled={tryOnBusyKey === key}
+                >
+                  {tryOnBusyKey === key ? "…" : t.tryOn}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
       <PageHeader
@@ -207,7 +326,7 @@ export default function RecommendPanel({ lang = "en", plannedEvent, onClearPlan,
       />
 
       <div dir={isUrdu ? "rtl" : "ltr"} style={{ padding: "0 clamp(16px, 6vw, 100px) 48px" }}>
-        <div style={{ ...S.card, border: `3px solid ${COLORS.accent}`, maxWidth: 760, margin: "0 auto" }}>
+        <div style={{ ...S.card, border: `3px solid ${COLORS.accent}` }}>
           <div style={S.formGroup}>
             <label style={S.label}>{t.lookingForLabel}</label>
             <input
@@ -312,98 +431,26 @@ export default function RecommendPanel({ lang = "en", plannedEvent, onClearPlan,
           </p>
         )}
 
-        {visibleProducts.length > 0 && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))",
-              gap: 18,
-              marginTop: 28,
-            }}
-          >
-            {visibleProducts.map((p, i) => {
-              const key = productKey(p);
-              const isSaved = !!saved[key];
-              return (
-                <div
-                  key={key}
-                  style={{
-                    position: "relative",
-                    background: COLORS.surface,
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: 14,
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  {!showSavedOnly && (
-                    <span
-                      style={{
-                        position: "absolute", top: 10, [isUrdu ? "left" : "right"]: 10, zIndex: 1,
-                        background: COLORS.accent, color: "#fff", fontSize: 11, fontWeight: 600,
-                        padding: "4px 10px", borderRadius: 20,
-                      }}
-                    >
-                      {t.match(pseudoMatch(i))}
-                    </span>
-                  )}
-                  <button
-                    onClick={() => toggleSave(p)}
-                    title={isSaved ? t.removeSaved : t.save}
-                    style={{
-                      position: "absolute", top: 10, [isUrdu ? "right" : "left"]: 10, zIndex: 1,
-                      background: COLORS.surface, border: `1px solid ${COLORS.border}`,
-                      color: isSaved ? COLORS.accent : COLORS.textSecondary,
-                      width: 30, height: 30, borderRadius: "50%", cursor: "pointer", fontSize: 14,
-                    }}
-                  >
-                    {isSaved ? "♥" : "♡"}
-                  </button>
+        {showSavedOnly && visibleProducts.length > 0 && renderProductGrid(visibleProducts, false)}
 
-                  <div style={{ height: 190, background: COLORS.surfaceAlt, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                    {p.image_url ? (
-                      <img src={p.image_url} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      <span style={{ fontSize: 34 }}>🛍️</span>
-                    )}
-                  </div>
-
-                  <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: 11, color: COLORS.accent, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                      {p.brand}
-                    </p>
-                    <p style={{ margin: 0, fontSize: 13, color: COLORS.textPrimary, fontWeight: 600, lineHeight: 1.4 }}>
-                      {p.title}
-                    </p>
-                    {p.price && <p style={{ margin: "2px 0 0", fontSize: 13, color: COLORS.textSecondary }}>{p.price}</p>}
-
-                    <div style={{ marginTop: "auto", display: "flex", gap: 8, paddingTop: 10 }}>
-                      <a
-                        href={p.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ ...S.btnSecondary, flex: 1, textAlign: "center", textDecoration: "none", fontSize: 12, padding: "7px 0" }}
-                      >
-                        {t.view}
-                      </a>
-                      <button
-                        style={{
-                          ...S.btnPrimary, flex: 1, fontSize: 12, padding: "7px 0",
-                          opacity: tryOnBusyKey === key ? 0.6 : 1,
-                        }}
-                        onClick={() => tryThisOn(p)}
-                        disabled={tryOnBusyKey === key}
-                      >
-                        {tryOnBusyKey === key ? "…" : t.tryOn}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        {!showSavedOnly && isMulti && groups.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 28 }}>
+            {groups.map((g) => (
+              <div key={g.label}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: COLORS.accent, textTransform: "capitalize", margin: "0 0 10px" }}>
+                  {t.groupLabels[g.label] || g.label}
+                </p>
+                {g.has_results ? (
+                  renderProductGrid(g.products, true)
+                ) : (
+                  <p style={{ fontSize: 12, color: COLORS.textMuted, margin: 0 }}>{g.message}</p>
+                )}
+              </div>
+            ))}
           </div>
         )}
+
+        {!showSavedOnly && !isMulti && visibleProducts.length > 0 && renderProductGrid(visibleProducts, true)}
       </div>
     </div>
   );
