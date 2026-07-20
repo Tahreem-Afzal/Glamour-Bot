@@ -226,9 +226,9 @@ export default function App() {
               flexShrink: 0, gap: 16, flexWrap: "wrap",
             }}
           >
-            <div style={{ fontSize: 23, fontWeight: 800, color: COLORS.accent, letterSpacing: 0.5 }}>
+            <div style={{ fontSize: 25, fontWeight: 900, color: COLORS.accent, letterSpacing: 0.5 }}>
               GALMOURBOT:{" "}
-              <span style={{ fontSize: 17, fontWeight: 500, color: COLORS.textSecondary, letterSpacing: "normal" }}>
+              <span style={{ fontSize: 20, fontWeight: 600, color: COLORS.textSecondary, letterSpacing: "normal" }}>
                 An AI-Enhanced Smart System for Dress Selection and Accessories Matching
               </span>
             </div>
@@ -256,9 +256,9 @@ export default function App() {
               flexShrink: 0, gap: 16, flexWrap: "wrap",
             }}
           >
-            <div style={{ fontSize: 23, fontWeight: 800, color: COLORS.accent, letterSpacing: 0.5 }}>
+            <div style={{ fontSize: 25, fontWeight: 900, color: COLORS.accent, letterSpacing: 0.5 }}>
               GALMOURBOT:{" "}
-              <span style={{ fontSize: 17, fontWeight: 500, color: COLORS.textSecondary, letterSpacing: "normal" }}>
+              <span style={{ fontSize: 20, fontWeight: 600, color: COLORS.textSecondary, letterSpacing: "normal" }}>
                 An AI-Enhanced Smart System for Dress Selection and Accessories Matching
               </span>
             </div>
