@@ -77,22 +77,19 @@ export default function HomePage({ onNavigate, lang = "en" }) {
             <div
               style={{
                 display: "flex", alignItems: "center", gap: 8, fontSize: 20, fontWeight: 800, letterSpacing: 2,
-                color: COLORS.accent, marginBottom: 18, justifyContent: isUrdu ? "flex-end" : "flex-start",
+                color: COLORS.accent, marginBottom: 26, justifyContent: isUrdu ? "flex-end" : "flex-start",
+                flexWrap: "wrap",
               }}
             >
               {!isUrdu && <span style={{ width: "1em", height: 3, background: COLORS.accent }} />}
-              GALMOURBOT
+              <span>
+                GALMOURBOT:{" "}
+                <span style={{ fontSize: 15, fontWeight: 500, letterSpacing: "normal", color: COLORS.textSecondary }}>
+                  An AI-Enhanced Smart System for Dress Selection and Accessories Matching
+                </span>
+              </span>
               {isUrdu && <span style={{ width: "1em", height: 3, background: COLORS.accent }} />}
             </div>
-            <p
-              style={{
-                fontSize: 15, color: COLORS.textSecondary, margin: "0 0 16px",
-                textAlign: isUrdu ? "right" : "left", lineHeight: 1.5,
-              }}
-            >
-              <b style={{ color: COLORS.accent, fontWeight: 800 }}>GalmourBot:</b>{" "}
-              An AI-Enhanced Smart System for Dress Selection and Accessories Matching
-            </p>
             <h1
               style={{
                 fontFamily: FONT_DISPLAY,
