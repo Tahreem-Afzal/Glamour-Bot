@@ -135,10 +135,6 @@ export default function App() {
         )}
         <div style={{ display: "flex", alignItems: "center", gap: 10, justifySelf: "end" }}>
           <WeatherWidget plannedEvent={plannedEvent} onPlanChange={setPlannedEvent} />
-          <div style={S.statusPill}>
-            <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
-            <span>{statusText}</span>
-          </div>
           <div style={{ display: "flex", border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: "hidden", flexShrink: 0 }}>
             <button
               onClick={() => setLang("en")}
@@ -220,6 +216,22 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "6px 28px",
+          background: COLORS.bg,
+          borderBottom: `1px solid ${COLORS.border}`,
+          flexShrink: 0,
+        }}
+      >
+        <div style={S.statusPill}>
+          <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
+          <span>{statusText}</span>
+        </div>
+      </div>
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         <div key={tab} className="glamourai-page-transition">
