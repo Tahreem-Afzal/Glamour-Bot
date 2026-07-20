@@ -54,6 +54,15 @@ const TR = {
     garmentImageLabel: "GARMENT IMAGE",
     uploading: "Uploading…",
     addToCatalog: "Add to Catalog",
+    singleModeBtn: "👕 Single item",
+    comboModeBtn: "👔 Full outfit (top + bottom)",
+    selectTopBadge: "TOP",
+    selectBottomBadge: "BOTTOM",
+    selectBothFirst: "Pick a top and a bottom first",
+    comboGenerateBtn: "✦ Generate Full Outfit",
+    comboGeneratingBtn: "⏳ Fitting top, then bottom (up to ~40s)…",
+    comboGenerated: "Full outfit try-on generated!",
+    comboExtraCreditsNote: "Full outfit runs FASHN twice (top, then bottom) — uses roughly double the credits of a single try-on.",
   },
   ur: {
     eyebrow: "ورچوئل فٹنگ روم",
@@ -97,6 +106,15 @@ const TR = {
     garmentImageLabel: "لباس کی تصویر",
     uploading: "اپلوڈ ہو رہا ہے…",
     addToCatalog: "کیٹلاگ میں شامل کریں",
+    singleModeBtn: "👕 ایک لباس",
+    comboModeBtn: "👔 مکمل لباس (اوپر + نیچے)",
+    selectTopBadge: "اوپر",
+    selectBottomBadge: "نیچے",
+    selectBothFirst: "پہلے ایک اوپری اور ایک نچلا لباس منتخب کریں",
+    comboGenerateBtn: "✦ مکمل لباس تیار کریں",
+    comboGeneratingBtn: "⏳ پہلے اوپر، پھر نیچے کا لباس فٹ ہو رہا ہے (تقریباً 40 سیکنڈ)…",
+    comboGenerated: "مکمل لباس کا ٹرائی آن تیار ہوگیا!",
+    comboExtraCreditsNote: "مکمل لباس FASHN کو دو بار چلاتا ہے (پہلے اوپر، پھر نیچے) — ایک عام ٹرائی آن سے تقریباً دوگنی کریڈٹس استعمال ہوتی ہیں۔",
   },
 };
 
@@ -112,6 +130,9 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
   const [garments, setGarments] = useState([]);
   const [category, setCategory] = useState("all");
   const [selected, setSelected] = useState(null);
+  const [comboMode, setComboMode] = useState(false);
+  const [selectedUpper, setSelectedUpper] = useState(null);
+  const [selectedLower, setSelectedLower] = useState(null);
 
   const [personSource, setPersonSource] = useState("upload");
   const [personFile, setPersonFile] = useState(null);
@@ -146,6 +167,7 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
   useEffect(() => {
     if (!pendingGarment) return;
     setGarments((prev) => (prev.some((g) => g.id === pendingGarment.id) ? prev : [...prev, pendingGarment]));
+    setComboMode(false);
     setSelected(pendingGarment);
     setSubTab("tryon");
     onConsumePending?.();
@@ -232,12 +254,25 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
     if (mode !== "camera") stopCamera();
   };
 
+  const toggleComboMode = () => {
+    setComboMode((v) => !v);
+    setSelected(null);
+    setSelectedUpper(null);
+    setSelectedLower(null);
+    setResultUrl(null);
+  };
+
   const generateTryOn = async () => {
     if (!personFile) {
       showNotification(tr.addPhotoFirst, "error");
       return;
     }
-    if (!selected) {
+    if (comboMode) {
+      if (!selectedUpper || !selectedLower) {
+        showNotification(tr.selectBothFirst, "error");
+        return;
+      }
+    } else if (!selected) {
       showNotification(tr.selectGarmentFirst, "error");
       return;
     }
@@ -246,15 +281,23 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
     try {
       const fd = new FormData();
       fd.append("person_image", personFile, "person.jpg");
-      fd.append("garment_id", String(selected.id));
-      const res = await apiFetch(`${API_BASE}/tryon/generate`, { method: "POST", body: fd });
+      let url;
+      if (comboMode) {
+        fd.append("upper_garment_id", String(selectedUpper.id));
+        fd.append("lower_garment_id", String(selectedLower.id));
+        url = `${API_BASE}/tryon/generate-combo`;
+      } else {
+        fd.append("garment_id", String(selected.id));
+        url = `${API_BASE}/tryon/generate`;
+      }
+      const res = await apiFetch(url, { method: "POST", body: fd });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || res.statusText);
       }
       const blob = await res.blob();
       setResultUrl(URL.createObjectURL(blob));
-      showNotification(tr.tryonGenerated, "success");
+      showNotification(comboMode ? tr.comboGenerated : tr.tryonGenerated, "success");
     } catch (err) {
       showNotification(tr.generationFailed(err.message), "error");
     } finally {
@@ -306,8 +349,15 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
     <div style={T.picker}>
       <div style={T.pickerHeader}>
         <span style={T.pickerTitle}>{tr.garmentCatalog}</span>
-        {selected && (
-          <button style={T.btnClear} onClick={() => setSelected(null)}>
+        {(comboMode ? (selectedUpper || selectedLower) : selected) && (
+          <button
+            style={T.btnClear}
+            onClick={() => {
+              setSelected(null);
+              setSelectedUpper(null);
+              setSelectedLower(null);
+            }}
+          >
             {tr.clear}
           </button>
         )}
@@ -323,7 +373,24 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
         {filtered.length === 0 && <div style={T.emptyMsg}>{tr.noGarmentsFoundUpload}</div>}
         {filtered.map((g) => {
           const col = CATEGORY_COLORS[g.category] || CATEGORY_COLORS.upper;
-          const isSel = selected?.id === g.id;
+          const isFullInCombo = comboMode && g.category === "full";
+          const isSel = comboMode
+            ? selectedUpper?.id === g.id || selectedLower?.id === g.id
+            : selected?.id === g.id;
+
+          const handleClick = () => {
+            if (isFullInCombo) return; // dresses can't be combined with a separate top/bottom
+            if (comboMode) {
+              if (g.category === "upper") {
+                setSelectedUpper((prev) => (prev?.id === g.id ? null : g));
+              } else if (g.category === "lower") {
+                setSelectedLower((prev) => (prev?.id === g.id ? null : g));
+              }
+            } else {
+              setSelected(isSel ? null : g);
+            }
+          };
+
           return (
             <div
               key={g.id}
@@ -331,8 +398,10 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
                 ...T.garmentCard,
                 background: isSel ? col.bg : COLORS.surface,
                 borderColor: isSel ? col.accent : COLORS.accent,
+                opacity: isFullInCombo ? 0.4 : 1,
+                cursor: isFullInCombo ? "not-allowed" : "pointer",
               }}
-              onClick={() => setSelected(isSel ? null : g)}
+              onClick={handleClick}
             >
               <div style={{ ...T.thumb, background: col.bg + "cc" }}>
                 {g.thumbnail_url ? (
@@ -352,7 +421,17 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
                 <p style={T.garmentName}>{g.name}</p>
                 <p style={T.garmentBrand}>{g.brand || "—"}</p>
               </div>
-              {isSel && <span style={{ color: col.accent, fontWeight: 700 }}>✓</span>}
+              {comboMode && selectedUpper?.id === g.id && (
+                <span style={{ fontSize: 9, fontWeight: 700, color: col.accent, border: `1px solid ${col.accent}`, borderRadius: 20, padding: "2px 8px" }}>
+                  {tr.selectTopBadge}
+                </span>
+              )}
+              {comboMode && selectedLower?.id === g.id && (
+                <span style={{ fontSize: 9, fontWeight: 700, color: col.accent, border: `1px solid ${col.accent}`, borderRadius: 20, padding: "2px 8px" }}>
+                  {tr.selectBottomBadge}
+                </span>
+              )}
+              {!comboMode && isSel && <span style={{ color: col.accent, fontWeight: 700 }}>✓</span>}
             </div>
           );
         })}
@@ -396,6 +475,20 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
       {subTab === "tryon" && (
         <div dir={isUrdu ? "rtl" : "ltr"} style={T.tryonRoot}>
           <div style={T.leftPane}>
+            <div style={T.modeToggle}>
+              <button style={{ ...T.modeBtn, ...(!comboMode ? T.modeBtnActive : {}) }} onClick={() => comboMode && toggleComboMode()}>
+                {tr.singleModeBtn}
+              </button>
+              <button style={{ ...T.modeBtn, ...(comboMode ? T.modeBtnActive : {}) }} onClick={() => !comboMode && toggleComboMode()}>
+                {tr.comboModeBtn}
+              </button>
+            </div>
+            {comboMode && (
+              <p style={{ fontSize: 11, color: COLORS.textMuted, fontStyle: "italic", margin: 0 }}>
+                {tr.comboExtraCreditsNote}
+              </p>
+            )}
+
             <div style={T.modeToggle}>
               <button style={{ ...T.modeBtn, ...(personSource === "upload" ? T.modeBtnActive : {}) }} onClick={() => switchPersonSource("upload")}>
                 {tr.uploadPhotoBtn}
@@ -482,13 +575,13 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
               <button
                 style={{
                   ...T.btnApplyBig,
-                  opacity: generating || !personFile || !selected ? 0.5 : 1,
-                  cursor: generating || !personFile || !selected ? "not-allowed" : "pointer",
+                  opacity: generating || !personFile || (comboMode ? !selectedUpper || !selectedLower : !selected) ? 0.5 : 1,
+                  cursor: generating || !personFile || (comboMode ? !selectedUpper || !selectedLower : !selected) ? "not-allowed" : "pointer",
                 }}
                 onClick={generateTryOn}
-                disabled={generating || !personFile || !selected}
+                disabled={generating || !personFile || (comboMode ? !selectedUpper || !selectedLower : !selected)}
               >
-                {generating ? tr.generatingBtn : tr.generateBtn}
+                {generating ? (comboMode ? tr.comboGeneratingBtn : tr.generatingBtn) : (comboMode ? tr.comboGenerateBtn : tr.generateBtn)}
               </button>
             </div>
 
