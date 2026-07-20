@@ -155,7 +155,7 @@ export default function LoginPage({ onAuthenticated }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 4 }}>
           <span style={{ color: COLORS.accent, fontSize: 22 }}>◈</span>
           <span style={{ fontFamily: FONT_DISPLAY, fontSize: 22, fontWeight: 700, color: COLORS.textPrimary }}>
-            GLAMOUR<span style={{ color: COLORS.accent }}>AI</span>
+            GALMOUR<span style={{ color: COLORS.accent }}>BOT</span>
           </span>
         </div>
 
@@ -163,7 +163,7 @@ export default function LoginPage({ onAuthenticated }) {
           {mode === "login" ? "Welcome back" : "Create your account"}
         </h1>
         <p style={{ margin: 0, textAlign: "center", fontSize: 13, color: COLORS.textSecondary }}>
-          {mode === "login" ? "Log in to continue to GlamourAI." : "Sign up to start styling with GlamourAI."}
+          {mode === "login" ? "Log in to continue to GalmourBot." : "Sign up to start styling with GalmourBot."}
         </p>
 
         <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>

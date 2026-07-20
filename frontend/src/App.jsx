@@ -119,7 +119,7 @@ export default function App() {
         <div style={S.logo}>
           <span style={{ color: COLORS.accent, fontSize: 20 }}>◈</span>
           <span style={S.logoText}>
-            GLAMOUR<span style={{ color: COLORS.accent }}>AI</span>
+            GALMOUR<span style={{ color: COLORS.accent }}>BOT</span>
           </span>
         </div>
         {isHome ? (

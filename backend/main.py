@@ -1,6 +1,6 @@
 """
-GlamourAI — unified backend
-Merges GlamourBot (chatbot + recommender + image generation) and the
+GalmourBot — unified backend
+Merges GalmourBot (chatbot + recommender + image generation) and the
 virtual try-on service into a single FastAPI app.
 """
 
@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
     logger.info("✅ Garment catalog DB initialized.")
 
 
-    # GlamourBot vectorstore + RAG client (builds the embedding index on
+    # GalmourBot vectorstore + RAG client (builds the embedding index on
     # first run if vector_db/ is missing — otherwise loads the prebuilt one)
     init_chat_state()
 
@@ -70,7 +70,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="GlamourAI — Fashion Assistant Suite", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="GalmourBot — Fashion Assistant Suite", version="1.0.0", lifespan=lifespan)
 
 # CORS: localhost for local dev, plus whatever the deployed frontend's
 # origin is (set FRONTEND_URL in Render's environment variables, e.g.

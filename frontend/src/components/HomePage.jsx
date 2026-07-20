@@ -13,7 +13,7 @@ const CARDS = [
 const COPY = {
   en: {
     headline: ["Your Style, Perfected by ", "AI", ""],
-    body: "Every great look starts with an idea. Share your occasion, and GlamourAI transforms it into a complete style journey—from bilingual AI styling in English and Urdu to personalized outfit inspiration, curated recommendations, and custom designs crafted from your own fabric. Finish with AI Virtual Try-On and see your perfect look before it comes to life—all directly in your browser, with no app to install.",
+    body: "Every great look starts with an idea. Share your occasion, and GalmourBot transforms it into a complete style journey—from bilingual AI styling in English and Urdu to personalized outfit inspiration, curated recommendations, and custom designs crafted from your own fabric. Finish with AI Virtual Try-On and see your perfect look before it comes to life—all directly in your browser, with no app to install.",
   },
   ur: {
     headline: ["اسٹائل کا مشورہ جو ", "واقعی", " آپ کی زبان میں بات کرتا ہے۔"],
@@ -38,7 +38,7 @@ function PhoneMockup({ offset = 0, messages }) {
     >
       <div style={{ background: COLORS.accent, color: "#fff", fontSize: 11, padding: "8px 12px", display: "flex", alignItems: "center", gap: 6 }}>
         <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff" }} />
-        GlamourAI
+        GalmourBot
       </div>
       <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 8, minHeight: 220 }}>
         {messages.map((m, i) => (
@@ -81,7 +81,7 @@ export default function HomePage({ onNavigate, lang = "en" }) {
               }}
             >
               {!isUrdu && <span style={{ width: "1em", height: 3, background: COLORS.accent }} />}
-              GLAMOURAI
+              GALMOURBOT
               {isUrdu && <span style={{ width: "1em", height: 3, background: COLORS.accent }} />}
             </div>
             <h1

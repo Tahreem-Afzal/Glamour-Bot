@@ -15,7 +15,7 @@ const TR = {
   en: {
     eyebrow: "Virtual fitting room",
     title: "See it before you BUY it.",
-    subtitle: "Experience fashion like never before with GlamourAI's Virtual Try-On. Upload your photo, choose any outfit, and instantly see how it looks on you. Explore styles with confidence and discover your perfect look before making a choice.",
+    subtitle: "Experience fashion like never before with GalmourBot's Virtual Try-On. Upload your photo, choose any outfit, and instantly see how it looks on you. Explore styles with confidence and discover your perfect look before making a choice.",
     tabTryOn: "Try on", tabCatalog: "Catalog", tabUpload: "Upload",
     couldntLoadGarments: "Could not reach the backend to load garments.",
     cameraDenied: (msg) => `Camera access denied: ${msg}`,
@@ -67,7 +67,7 @@ const TR = {
   ur: {
     eyebrow: "ورچوئل فٹنگ روم",
     title: "خریدنے سے پہلے دیکھ لیں۔",
-    subtitle: "GlamourAI کے ورچوئل ٹرائی آن کے ساتھ فیشن کا نیا تجربہ کریں۔ اپنی تصویر اپلوڈ کریں، کوئی بھی لباس منتخب کریں، اور فوراً دیکھیں یہ آپ پر کیسا لگتا ہے۔ اعتماد کے ساتھ اسٹائلز دریافت کریں اور فیصلہ کرنے سے پہلے اپنا بہترین انداز جانیں۔",
+    subtitle: "GalmourBot کے ورچوئل ٹرائی آن کے ساتھ فیشن کا نیا تجربہ کریں۔ اپنی تصویر اپلوڈ کریں، کوئی بھی لباس منتخب کریں، اور فوراً دیکھیں یہ آپ پر کیسا لگتا ہے۔ اعتماد کے ساتھ اسٹائلز دریافت کریں اور فیصلہ کرنے سے پہلے اپنا بہترین انداز جانیں۔",
     tabTryOn: "آزما کر دیکھیں", tabCatalog: "کیٹلاگ", tabUpload: "اپلوڈ",
     couldntLoadGarments: "لباس لوڈ کرنے کے لیے بیک اینڈ تک رسائی نہیں ہو سکی۔",
     cameraDenied: (msg) => `کیمرے تک رسائی مسترد کر دی گئی: ${msg}`,
