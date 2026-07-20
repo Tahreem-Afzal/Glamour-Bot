@@ -113,125 +113,164 @@ export default function App() {
     return <LoginPage onAuthenticated={handleAuthenticated} />;
   }
 
+  const rightControls = (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, justifySelf: "end" }}>
+      <WeatherWidget plannedEvent={plannedEvent} onPlanChange={setPlannedEvent} />
+      <div style={{ display: "flex", border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: "hidden", flexShrink: 0 }}>
+        <button
+          onClick={() => setLang("en")}
+          style={{
+            border: "none",
+            padding: "5px 14px",
+            fontSize: 11,
+            cursor: "pointer",
+            background: lang === "en" ? COLORS.accent : "none",
+            color: lang === "en" ? "#fff" : COLORS.textSecondary,
+          }}
+        >
+          EN
+        </button>
+        <button
+          onClick={() => setLang("ur")}
+          style={{
+            border: "none",
+            padding: "5px 14px",
+            fontSize: 11,
+            cursor: "pointer",
+            background: lang === "ur" ? COLORS.accent : "none",
+            color: lang === "ur" ? "#fff" : COLORS.textSecondary,
+          }}
+        >
+          اردو
+        </button>
+      </div>
+
+      <div style={{ position: "relative", flexShrink: 0 }}>
+        <button
+          onClick={() => setUserMenuOpen((v) => !v)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: COLORS.accentSoftBg,
+            border: `1.5px solid ${COLORS.accent}`,
+            color: COLORS.accentDark,
+            borderRadius: 20,
+            padding: "5px 12px",
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          <span
+            style={{
+              width: 20, height: 20, borderRadius: "50%", background: COLORS.accent, color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700,
+            }}
+          >
+            {(user?.name || user?.email || "?").trim()[0]?.toUpperCase()}
+          </span>
+          {user?.name || user?.email}
+        </button>
+        {userMenuOpen && (
+          <div
+            style={{
+              position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 20,
+              background: COLORS.surface, border: `1.5px solid ${COLORS.accent}`, borderRadius: 10,
+              padding: 10, minWidth: 180, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+            }}
+          >
+            <p style={{ margin: "0 0 8px", fontSize: 12, color: COLORS.textSecondary, wordBreak: "break-word" }}>
+              {user?.email}
+            </p>
+            <button
+              onClick={logout}
+              style={{
+                width: "100%", background: COLORS.redSoftBg, border: `1px solid ${COLORS.red}`,
+                color: COLORS.red, borderRadius: 8, padding: "8px 0", fontSize: 12, fontWeight: 600, cursor: "pointer",
+              }}
+            >
+              Log out
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const navRow = (
+    <nav className="glamourai-nav" style={S.nav}>
+      {TABS.map(([t, en, ur]) => (
+        <button key={t} style={{ ...S.navBtn, ...(tab === t ? S.navBtnActive : {}) }} onClick={() => setTab(t)}>
+          {lang === "ur" ? ur : en}
+        </button>
+      ))}
+    </nav>
+  );
+
+  const statusRow = (
+    <div style={S.statusPill}>
+      <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
+      <span>{statusText}</span>
+    </div>
+  );
+
   return (
     <div style={S.root}>
-      <header style={S.header}>
-        <div style={S.logo}>
-          <span style={{ color: COLORS.accent, fontSize: 20 }}>◈</span>
-          <span style={S.logoText}>
-            GALMOUR<span style={{ color: COLORS.accent }}>BOT</span>
-          </span>
-        </div>
-        {isHome ? (
-          <div />
-        ) : (
-          <nav className="glamourai-nav" style={S.nav}>
-            {TABS.map(([t, en, ur]) => (
-              <button key={t} style={{ ...S.navBtn, ...(tab === t ? S.navBtnActive : {}) }} onClick={() => setTab(t)}>
-                {lang === "ur" ? ur : en}
-              </button>
-            ))}
-          </nav>
-        )}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, justifySelf: "end" }}>
-          <WeatherWidget plannedEvent={plannedEvent} onPlanChange={setPlannedEvent} />
-          <div style={{ display: "flex", border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: "hidden", flexShrink: 0 }}>
-            <button
-              onClick={() => setLang("en")}
-              style={{
-                border: "none",
-                padding: "5px 14px",
-                fontSize: 11,
-                cursor: "pointer",
-                background: lang === "en" ? COLORS.accent : "none",
-                color: lang === "en" ? "#fff" : COLORS.textSecondary,
-              }}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLang("ur")}
-              style={{
-                border: "none",
-                padding: "5px 14px",
-                fontSize: 11,
-                cursor: "pointer",
-                background: lang === "ur" ? COLORS.accent : "none",
-                color: lang === "ur" ? "#fff" : COLORS.textSecondary,
-              }}
-            >
-              اردو
-            </button>
-          </div>
-
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <button
-              onClick={() => setUserMenuOpen((v) => !v)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                background: COLORS.accentSoftBg,
-                border: `1.5px solid ${COLORS.accent}`,
-                color: COLORS.accentDark,
-                borderRadius: 20,
-                padding: "5px 12px",
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              <span
-                style={{
-                  width: 20, height: 20, borderRadius: "50%", background: COLORS.accent, color: "#fff",
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700,
-                }}
-              >
-                {(user?.name || user?.email || "?").trim()[0]?.toUpperCase()}
+      {isHome ? (
+        <>
+          <header style={S.header}>
+            <div style={S.logo}>
+              <span style={{ color: COLORS.accent, fontSize: 20 }}>◈</span>
+              <span style={S.logoText}>
+                GALMOUR<span style={{ color: COLORS.accent }}>BOT</span>
               </span>
-              {user?.name || user?.email}
-            </button>
-            {userMenuOpen && (
-              <div
-                style={{
-                  position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 20,
-                  background: COLORS.surface, border: `1.5px solid ${COLORS.accent}`, borderRadius: 10,
-                  padding: 10, minWidth: 180, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                }}
-              >
-                <p style={{ margin: "0 0 8px", fontSize: 12, color: COLORS.textSecondary, wordBreak: "break-word" }}>
-                  {user?.email}
-                </p>
-                <button
-                  onClick={logout}
-                  style={{
-                    width: "100%", background: COLORS.redSoftBg, border: `1px solid ${COLORS.red}`,
-                    color: COLORS.red, borderRadius: 8, padding: "8px 0", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  }}
-                >
-                  Log out
-                </button>
-              </div>
-            )}
+            </div>
+            <div />
+            {rightControls}
+          </header>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              padding: "6px 28px",
+              background: COLORS.bg,
+              borderBottom: `1px solid ${COLORS.border}`,
+              flexShrink: 0,
+            }}
+          >
+            {statusRow}
           </div>
-        </div>
-      </header>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          padding: "6px 28px",
-          background: COLORS.bg,
-          borderBottom: `1px solid ${COLORS.border}`,
-          flexShrink: 0,
-        }}
-      >
-        <div style={S.statusPill}>
-          <span style={{ ...S.dot, background: health ? statusColor : COLORS.textMuted }} />
-          <span>{statusText}</span>
-        </div>
-      </div>
+        </>
+      ) : (
+        <>
+          <header
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "16px 28px", background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`,
+              flexShrink: 0, gap: 16, flexWrap: "wrap",
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 800, color: COLORS.accent, letterSpacing: 0.5 }}>
+              GALMOURBOT:{" "}
+              <span style={{ fontSize: 14, fontWeight: 500, color: COLORS.textSecondary, letterSpacing: "normal" }}>
+                An AI-Enhanced Smart System for Dress Selection and Accessories Matching
+              </span>
+            </div>
+            {rightControls}
+          </header>
+          <div
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "10px 28px", background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`,
+              flexShrink: 0, gap: 16, flexWrap: "wrap",
+            }}
+          >
+            {navRow}
+            {statusRow}
+          </div>
+        </>
+      )}
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         <div key={tab} className="glamourai-page-transition">
