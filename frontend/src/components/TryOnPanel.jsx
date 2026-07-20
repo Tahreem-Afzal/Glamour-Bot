@@ -332,7 +332,17 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
         throw new Error(err.detail || res.statusText);
       }
       const data = await res.json();
-      setGarments((prev) => [...prev, data]);
+      // Prepend (not append) so a newly uploaded item appears at the very
+      // top of the picker/catalog list immediately — previously it was
+      // added to the end of an already-scrollable list, which could make
+      // it look like the upload silently failed when it had actually
+      // succeeded but was just scrolled out of view below existing items.
+      setGarments((prev) => [data, ...prev]);
+      // Also reset the shared category filter to "All" — if it was left
+      // on e.g. "Tops" from browsing earlier and the new item is a
+      // "Bottom", it wouldn't show under that filter at all even though
+      // it uploaded correctly.
+      setCategory("all");
       showNotification(tr.uploadedSuccess, "success");
       setUploadForm({ name: "", brand: "", category: "upper", tags: "" });
       setUploadFile(null);
@@ -517,7 +527,7 @@ export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePendi
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
-                        style={{ display: "none" }}
+                        style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}
                         onChange={(e) => handlePersonUpload(e.target.files?.[0])}
                       />
                     </div>
