@@ -137,6 +137,12 @@ export default function AboutPage({ lang = "en" }) {
         eyebrow={t.eyebrow}
         eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
         title={t.title}
+        subtitle={
+          <>
+            <b style={{ color: COLORS.textPrimary, fontWeight: 800 }}>GalmourBot:</b>{" "}
+            An AI-Enhanced Smart System for Dress Selection and Accessories Matching
+          </>
+        }
       />
 
       <div

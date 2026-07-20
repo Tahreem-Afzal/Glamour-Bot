@@ -84,6 +84,15 @@ export default function HomePage({ onNavigate, lang = "en" }) {
               GALMOURBOT
               {isUrdu && <span style={{ width: "1em", height: 3, background: COLORS.accent }} />}
             </div>
+            <p
+              style={{
+                fontSize: 15, color: COLORS.textSecondary, margin: "0 0 16px",
+                textAlign: isUrdu ? "right" : "left", lineHeight: 1.5,
+              }}
+            >
+              <b style={{ color: COLORS.textPrimary, fontWeight: 800 }}>GalmourBot:</b>{" "}
+              An AI-Enhanced Smart System for Dress Selection and Accessories Matching
+            </p>
             <h1
               style={{
                 fontFamily: FONT_DISPLAY,
