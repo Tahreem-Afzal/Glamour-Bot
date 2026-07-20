@@ -130,11 +130,26 @@ OCCASION_EXPANSION = {
     "wedding":    ["formal", "embroidered", "silk", "bridal", "heavy", "embellished"],
     "baraat":     ["formal", "embroidered", "silk", "bridal", "heavy", "embellished"],
     "walima":     ["formal", "embroidered", "silk", "bridal", "heavy", "embellished"],
+    # "bridal" previously only existed as an EXPANSION VALUE above (under
+    # wedding/baraat/walima) — it was never a KEY itself, so a query that
+    # literally said "bridal dress" got zero expansion and fell back to
+    # matching the bare word "bridal" against raw product text, which
+    # rarely appears verbatim in these catalogs (titles say "wedding
+    # collection", "heavy embroidered", etc., not the literal word
+    # "bridal") — hence generic/simple dresses winning instead.
+    "bridal":     ["formal", "embroidered", "silk", "bridal", "heavy", "embellished", "wedding", "baraat", "walima"],
     "party":      ["formal", "embroidered", "net", "organza", "chiffon", "embellished"],
     "casual":     ["lawn", "cotton", "printed", "daily"],
     "formal":     ["embroidered", "silk", "chiffon", "organza", "net", "embellished"],
     "fancy":      ["embroidered", "silk", "chiffon", "organza", "embellished", "net"],
     "office":     ["formal", "cotton", "lawn", "solid"],
+    # Covers "semiformal"/"semi-formal" typed as one token. If someone
+    # types "semi formal" as two separate words instead, the "formal" key
+    # above already matches on its own — OCCASION_EXPANSION keys are
+    # checked as single whole words (see _expand_query below), so a
+    # two-word phrase can never be a key here.
+    "semiformal": ["formal", "embroidered", "chiffon", "organza", "net", "smart"],
+    "semi-formal": ["formal", "embroidered", "chiffon", "organza", "net", "smart"],
     "summer":     ["lawn", "cotton", "linen", "chiffon"],
     "winter":     ["velvet", "khaddar", "wool", "karandi"],
 }
@@ -176,6 +191,24 @@ CATEGORY_EXPANSION = {
     "suit":        ["suit", "kurta", "kameez", "pret", "stitched", "unstitched", "dress"],
     "shirt":       ["shirt", "kurta", "kameez", "suit", "dress"],
     "abaya":       ["abaya", "gown", "outfit"],
+    # Trousers/pants/jeans had NO entry at all until now — same class of
+    # bug already fixed for "dress" above (see module docstring): a
+    # "trousers" query had zero vocabulary bridge to what's actually in
+    # these catalogs, and with no key match, `requested_categories` in
+    # recommend() stayed empty, so NO mandatory category filter was ever
+    # applied — the query fell through to generic scoring where anything
+    # (a floral maxi dress, an embroidered suit) could still rank highly.
+    # Pakistani lawn-suit titles do commonly name the trouser/bottom
+    # piece of a 3-piece set ("3Pc Suit with Trouser", "Shalwar included"),
+    # so this vocabulary bridges to real product text rather than staying
+    # purely aspirational.
+    "trouser":     ["trouser", "trousers", "pant", "pants", "bottom", "bottoms", "shalwar", "pajama", "palazzo", "capri", "cigarette", "denim", "jeans"],
+    "trousers":    ["trouser", "trousers", "pant", "pants", "bottom", "bottoms", "shalwar", "pajama", "palazzo", "capri", "cigarette", "denim", "jeans"],
+    "pant":        ["trouser", "trousers", "pant", "pants", "bottom", "bottoms", "shalwar", "pajama", "palazzo"],
+    "pants":       ["trouser", "trousers", "pant", "pants", "bottom", "bottoms", "shalwar", "pajama", "palazzo"],
+    "jeans":       ["jeans", "jean", "denim"],
+    "jean":        ["jeans", "jean", "denim"],
+    "palazzo":     ["palazzo", "palazzos", "trouser", "pants"],
 }
 
 COLOR_WORDS = {
