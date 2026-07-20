@@ -3,11 +3,62 @@ import { COLORS } from "../styles.js";
 import PageHeader from "./PageHeader.jsx";
 
 const TEAM = [
-  { name: "Zaiba Saeed", role: "Team member", detail: "BS Artificial Intelligence, final year" },
-  { name: "Tahreem Afzal", role: "Team member", detail: "BS Artificial Intelligence, final year" },
-  { name: "Fatima Farooq", role: "Team member", detail: "BS Artificial Intelligence, final year" },
-  { name: "Hurair Ahmad", role: "Team member", detail: "BS Artificial Intelligence, final year" },
+  { name: "Zaiba Saeed" },
+  { name: "Tahreem Afzal" },
+  { name: "Fatima Farooq" },
+  { name: "Hurair Ahmad" },
 ];
+
+const T = {
+  en: {
+    eyebrow: "About us",
+    title: "The people behind GlamourAI.",
+    supervisorLabel: "PROJECT SUPERVISOR",
+    coSupervisorLabel: "CO-SUPERVISOR",
+    teamLabel: "PROJECT TEAM",
+    projectLabel: "THE PROJECT",
+    thoughtLabel: "THOUGHT BEHIND THE PROJECT",
+    teamMember: "Team member",
+    teamMemberDetail: "BS Artificial Intelligence, final year",
+    supervisor: {
+      role: "Project supervisor",
+      detail: "Department of Artificial Intelligence, UMT Lahore",
+      description: "Provided invaluable guidance, continuous support, and expert mentorship throughout the development of GlamourAI, helping shape the project from concept to completion. Their insightful feedback, technical expertise, and constant encouragement played a vital role in refining our ideas, overcoming challenges, and ensuring the successful execution of the project. Their mentorship inspired innovation, strengthened our problem-solving approach, and significantly contributed to the overall quality and success of GlamourAI.",
+    },
+    coSupervisor: {
+      role: "Co-supervisor",
+      detail: "Department of Computer Science, UMT Lahore",
+      description: "Generously shared her time, knowledge, and technical expertise from a Computer Science perspective, offering thoughtful guidance and constructive feedback throughout the development of GlamourAI. Her valuable insights into system design, architecture, implementation, and problem-solving helped strengthen the project at several key stages. Through her continuous support and encouragement, she played an important role in refining our technical approach, improving the overall quality of the system, and ensuring that the project was developed with a strong, reliable, and well-structured foundation.",
+    },
+    projectPara1: "GlamourAI is a final-year BS Artificial Intelligence project developed at the University of Management & Technology (UMT), Lahore, with a vision to make outfit discovery effortless, inspiring, and personal. Instead of switching between different apps for inspiration, shopping, designing, and fitting, GlamourAI brings every stage together in one intelligent experience.",
+    projectPara2: "Your journey begins with our AI Fashion Stylist, which understands your event, preferences, language, and even the weather on your selected date to create a complete fashion plan—including outfits, shoes, accessories, and makeup. Once you've found your inspiration, our Recommendation System helps you discover products that match your vision. If you can't find exactly what you're looking for—or you'd rather create something truly unique—our AI Image Generation module transforms your own fabric and design ideas into realistic garment previews while preserving the original colors and prints. Finally, our Virtual Try-On technology lets you see your chosen or custom-designed outfit on yourself before making a decision. From the first idea to the final look, GlamourAI empowers you to create, personalize, and wear fashion with confidence.",
+    thought: "Fashion should be exciting, not overwhelming. Yet finding the perfect outfit often means searching through countless stores, gathering inspiration from different platforms, imagining how fabrics will look when stitched, and wondering whether the final result will suit you. GlamourAI was created to bring this fragmented journey into one intelligent experience. By combining AI-powered styling, personalized recommendations, custom garment visualization, and virtual try-on, our goal is to help people make confident fashion decisions with ease—saving time, reducing uncertainty, and making personal style more accessible to everyone.",
+  },
+  ur: {
+    eyebrow: "ہمارے بارے میں",
+    title: "GlamourAI کے پیچھے موجود لوگ۔",
+    supervisorLabel: "پروجیکٹ سپروائزر",
+    coSupervisorLabel: "شریک نگران",
+    teamLabel: "پروجیکٹ ٹیم",
+    projectLabel: "پروجیکٹ",
+    thoughtLabel: "پروجیکٹ کے پیچھے سوچ",
+    teamMember: "ٹیم ممبر",
+    teamMemberDetail: "بی ایس آرٹیفیشل انٹیلیجنس، آخری سال",
+    supervisor: {
+      role: "پروجیکٹ سپروائزر",
+      detail: "شعبہ آرٹیفیشل انٹیلیجنس، یو ایم ٹی لاہور",
+      description: "GlamourAI کی تیاری کے دوران انمول رہنمائی، مسلسل تعاون، اور ماہرانہ نگرانی فراہم کی، جس نے پروجیکٹ کو خیال سے تکمیل تک پہنچانے میں مدد دی۔ ان کی بصیرت افروز رائے، تکنیکی مہارت، اور مسلسل حوصلہ افزائی نے ہمارے خیالات کو نکھارنے، مشکلات پر قابو پانے، اور پروجیکٹ کی کامیاب تکمیل میں اہم کردار ادا کیا۔ ان کی رہنمائی نے جدت کو فروغ دیا، ہمارے مسئلہ حل کرنے کے انداز کو مضبوط کیا، اور GlamourAI کے مجموعی معیار اور کامیابی میں نمایاں حصہ ڈالا۔",
+    },
+    coSupervisor: {
+      role: "شریک نگران",
+      detail: "شعبہ کمپیوٹر سائنس، یو ایم ٹی لاہور",
+      description: "کمپیوٹر سائنس کے نقطہ نظر سے اپنا وقت، علم اور تکنیکی مہارت فراخدلی سے فراہم کی، اور GlamourAI کی تیاری کے دوران سوچی سمجھی رہنمائی اور تعمیری رائے دی۔ سسٹم ڈیزائن، آرکیٹیکچر، عملدرآمد، اور مسئلہ حل کرنے میں ان کی قیمتی بصیرت نے کئی اہم مراحل پر پروجیکٹ کو مضبوط بنانے میں مدد کی۔ ان کی مسلسل حمایت اور حوصلہ افزائی کے ذریعے، انہوں نے ہمارے تکنیکی انداز کو نکھارنے، سسٹم کے مجموعی معیار کو بہتر بنانے، اور یہ یقینی بنانے میں اہم کردار ادا کیا کہ پروجیکٹ ایک مضبوط، قابل اعتماد، اور اچھی طرح ترتیب شدہ بنیاد کے ساتھ تیار کیا گیا۔",
+    },
+    projectPara1: "GlamourAI یونیورسٹی آف مینجمنٹ اینڈ ٹیکنالوجی (یو ایم ٹی)، لاہور میں تیار کیا گیا بی ایس آرٹیفیشل انٹیلیجنس کا آخری سال کا پروجیکٹ ہے، جس کا مقصد لباس کی تلاش کو آسان، متاثر کن اور ذاتی بنانا ہے۔ تحریک، خریداری، ڈیزائننگ، اور فٹنگ کے لیے مختلف ایپس کے درمیان سوئچ کرنے کے بجائے، GlamourAI ہر مرحلے کو ایک ذہین تجربے میں یکجا کرتا ہے۔",
+    projectPara2: "آپ کا سفر ہمارے AI فیشن اسٹائلسٹ سے شروع ہوتا ہے، جو آپ کے موقع، ترجیحات، زبان، اور آپ کی منتخب کردہ تاریخ کے موسم کو سمجھ کر ایک مکمل فیشن پلان تیار کرتا ہے—جس میں لباس، جوتے، لوازمات، اور میک اپ شامل ہیں۔ اپنی پسند تلاش کرنے کے بعد، ہمارا تجاویز کا نظام آپ کو آپ کے وژن سے میل کھاتی مصنوعات دریافت کرنے میں مدد دیتا ہے۔ اگر آپ کو بالکل وہی چیز نہیں ملتی جو آپ چاہتے ہیں—یا آپ کچھ منفرد بنانا چاہتے ہیں—تو ہمارا AI تصویر کی تخلیق ماڈیول آپ کے اپنے کپڑے اور ڈیزائن کے خیالات کو اصل رنگوں اور پرنٹس کو برقرار رکھتے ہوئے حقیقت پسندانہ لباس کی جھلکیوں میں بدل دیتا ہے۔ آخر میں، ہماری ورچوئل ٹرائی آن ٹیکنالوجی آپ کو فیصلہ کرنے سے پہلے اپنے منتخب یا حسب ضرورت لباس کو خود پر دیکھنے دیتی ہے۔ پہلے خیال سے لے کر حتمی انداز تک، GlamourAI آپ کو اعتماد کے ساتھ فیشن تخلیق کرنے، ذاتی بنانے اور پہننے کا اختیار دیتا ہے۔",
+    thought: "فیشن پرجوش ہونا چاہیے، مغلوب کن نہیں۔ پھر بھی، بہترین لباس تلاش کرنے کا مطلب اکثر بے شمار دکانوں میں تلاش کرنا، مختلف پلیٹ فارمز سے تحریک حاصل کرنا، یہ تصور کرنا کہ کپڑا سلنے کے بعد کیسا لگے گا، اور یہ سوچنا کہ آخری نتیجہ آپ پر جچے گا یا نہیں۔ GlamourAI اس بکھرے ہوئے سفر کو ایک ذہین تجربے میں یکجا کرنے کے لیے بنایا گیا۔ AI سے چلنے والی اسٹائلنگ، ذاتی تجاویز، حسب ضرورت لباس کی تصویر کشی، اور ورچوئل ٹرائی آن کو یکجا کر کے، ہمارا مقصد لوگوں کو وقت بچاتے ہوئے، غیر یقینی کو کم کرتے ہوئے، اور ذاتی انداز کو سب کے لیے قابل رسائی بناتے ہوئے، آسانی سے پراعتماد فیشن فیصلے کرنے میں مدد دینا ہے۔",
+  },
+};
 
 function SectionLabel({ children }) {
   return (
@@ -76,16 +127,20 @@ function PersonCard({ name, role, detail, description }) {
   );
 }
 
-export default function AboutPage() {
+export default function AboutPage({ lang = "en" }) {
+  const t = T[lang];
+  const isUrdu = lang === "ur";
+
   return (
     <div style={{ flex: 1, width: "100%", overflowY: "auto" }}>
       <PageHeader
-        eyebrow="About us"
+        eyebrow={t.eyebrow}
         eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
-        title="The people behind GlamourAI."
+        title={t.title}
       />
 
       <div
+        dir={isUrdu ? "rtl" : "ltr"}
         style={{
           padding: "0 clamp(16px, 6vw, 100px) 48px",
           width: "100%",
@@ -96,36 +151,36 @@ export default function AboutPage() {
         }}
       >
         <div>
-          <SectionLabel>PROJECT SUPERVISOR</SectionLabel>
+          <SectionLabel>{t.supervisorLabel}</SectionLabel>
           <PersonCard
             name="Dr. Ashfaq Ahmad"
-            role="Project supervisor"
-            detail="Department of Artificial Intelligence, UMT Lahore"
-            description="Provided invaluable guidance, continuous support, and expert mentorship throughout the development of GlamourAI, helping shape the project from concept to completion. Their insightful feedback, technical expertise, and constant encouragement played a vital role in refining our ideas, overcoming challenges, and ensuring the successful execution of the project. Their mentorship inspired innovation, strengthened our problem-solving approach, and significantly contributed to the overall quality and success of GlamourAI."
+            role={t.supervisor.role}
+            detail={t.supervisor.detail}
+            description={t.supervisor.description}
           />
         </div>
 
         <div>
-          <SectionLabel>CO-SUPERVISOR</SectionLabel>
+          <SectionLabel>{t.coSupervisorLabel}</SectionLabel>
           <PersonCard
             name="Dr. Iqra Javed"
-            role="Co-supervisor"
-            detail="Department of Computer Science, UMT Lahore"
-            description="Generously shared her time, knowledge, and technical expertise from a Computer Science perspective, offering thoughtful guidance and constructive feedback throughout the development of GlamourAI. Her valuable insights into system design, architecture, implementation, and problem-solving helped strengthen the project at several key stages. Through her continuous support and encouragement, she played an important role in refining our technical approach, improving the overall quality of the system, and ensuring that the project was developed with a strong, reliable, and well-structured foundation."
+            role={t.coSupervisor.role}
+            detail={t.coSupervisor.detail}
+            description={t.coSupervisor.description}
           />
         </div>
 
         <div>
-          <SectionLabel>PROJECT TEAM</SectionLabel>
+          <SectionLabel>{t.teamLabel}</SectionLabel>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {TEAM.map((t) => (
-              <PersonCard key={t.name} {...t} />
+            {TEAM.map((member) => (
+              <PersonCard key={member.name} name={member.name} role={t.teamMember} detail={t.teamMemberDetail} />
             ))}
           </div>
         </div>
 
         <div>
-          <SectionLabel>THE PROJECT</SectionLabel>
+          <SectionLabel>{t.projectLabel}</SectionLabel>
           <div
             style={{
               background: COLORS.accentSoftBg,
@@ -137,26 +192,15 @@ export default function AboutPage() {
             }}
           >
             <p style={{ margin: 0, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.8 }}>
-              GlamourAI is a final-year BS Artificial Intelligence project developed at the University of Management
-              & Technology (UMT), Lahore, with a vision to make outfit discovery effortless, inspiring, and
-              personal. Instead of switching between different apps for inspiration, shopping, designing, and
-              fitting, GlamourAI brings every stage together in one intelligent experience.
+              {t.projectPara1}
               <br /><br />
-              Your journey begins with our AI Fashion Stylist, which understands your event, preferences, language,
-              and even the weather on your selected date to create a complete fashion plan—including outfits, shoes,
-              accessories, and makeup. Once you've found your inspiration, our Recommendation System helps you
-              discover products that match your vision. If you can't find exactly what you're looking for—or you'd
-              rather create something truly unique—our AI Image Generation module transforms your own fabric and
-              design ideas into realistic garment previews while preserving the original colors and prints.
-              Finally, our Virtual Try-On technology lets you see your chosen or custom-designed outfit on yourself
-              before making a decision. From the first idea to the final look, GlamourAI empowers you to create,
-              personalize, and wear fashion with confidence.
+              {t.projectPara2}
             </p>
           </div>
         </div>
 
         <div>
-          <SectionLabel>THOUGHT BEHIND THE PROJECT</SectionLabel>
+          <SectionLabel>{t.thoughtLabel}</SectionLabel>
           <div
             style={{
               background: COLORS.accentSoftBg,
@@ -168,13 +212,7 @@ export default function AboutPage() {
             }}
           >
             <p style={{ margin: 0, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.8 }}>
-              Fashion should be exciting, not overwhelming. Yet finding the perfect outfit often means searching
-              through countless stores, gathering inspiration from different platforms, imagining how fabrics will
-              look when stitched, and wondering whether the final result will suit you. GlamourAI was created to
-              bring this fragmented journey into one intelligent experience. By combining AI-powered styling,
-              personalized recommendations, custom garment visualization, and virtual try-on, our goal is to help
-              people make confident fashion decisions with ease—saving time, reducing uncertainty, and making
-              personal style more accessible to everyone.
+              {t.thought}
             </p>
           </div>
         </div>

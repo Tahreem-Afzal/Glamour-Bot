@@ -3,18 +3,70 @@ import { API_BASE, S, COLORS } from "../styles.js";
 import { apiFetch } from "../api.js";
 import PageHeader from "./PageHeader.jsx";
 
-const SUGGESTED_PROMPTS = [
-  "👗 Suggest an outfit for a wedding",
-  "☔ What should I wear in monsoon season?",
-  "💼 Something formal for a job interview",
-  "🌙 Eid outfit ideas in light pink",
-  "🥻 Casual lawn suit for everyday wear",
-];
+const T = {
+  en: {
+    eyebrow: "Chatbot",
+    title: "Share your event, choose the date, and let GlamourAI create a complete, professionally styled look just for you.",
+    subtitle: "From outfits and shoes to accessories and makeup, every recommendation is thoughtfully curated to match the occasion. Available in English and Urdu.",
+    cityLabel: "CITY (for weather-aware suggestions)",
+    cityPlaceholder: "e.g. Lahore",
+    greeting: "Hi! I'm GlamourBot — ask me about outfits, occasions, or fashion advice. You can write in English or Roman Urdu.",
+    planningFor: (date, city) => `📅 Planning for ${date} in ${city} — advice uses that day's forecast.`,
+    useToday: "Use today instead",
+    listening: "Listening & thinking…",
+    thinking: "GlamourBot is thinking…",
+    stopSpeaking: "Stop GlamourBot speaking",
+    stopRecording: "Stop recording",
+    speakQuestion: "Speak your question",
+    recording: "Recording… speak now",
+    inputPlaceholder: "Ask about outfits, occasions, or products…",
+    send: "Send",
+    couldntReach: (msg) => `⚠️ Couldn't reach the backend: ${msg}`,
+    micError: (msg) => `⚠️ Couldn't access microphone: ${msg}`,
+    voiceError: (msg) => `⚠️ Voice message failed: ${msg}`,
+    prompts: [
+      "👗 Suggest an outfit for a wedding",
+      "☔ What should I wear in monsoon season?",
+      "💼 Something formal for a job interview",
+      "🌙 Eid outfit ideas in light pink",
+      "🥻 Casual lawn suit for everyday wear",
+    ],
+  },
+  ur: {
+    eyebrow: "چیٹ بوٹ",
+    title: "اپنے موقع کا انتخاب کریں، تاریخ چنیں، اور GlamourAI کو آپ کے لیے مکمل، پیشہ ورانہ انداز میں تیار کردہ لک بنانے دیں۔",
+    subtitle: "لباس اور جوتوں سے لے کر لوازمات اور میک اپ تک، ہر تجویز موقع کے مطابق سوچ سمجھ کر تیار کی جاتی ہے۔ انگریزی اور اردو میں دستیاب۔",
+    cityLabel: "شہر (موسم کے مطابق تجاویز کے لیے)",
+    cityPlaceholder: "مثلاً لاہور",
+    greeting: "السلام علیکم! میں GlamourBot ہوں — مجھ سے لباس، مواقع، یا فیشن کے مشورے پوچھیں۔ آپ انگریزی یا رومن اردو میں لکھ سکتے ہیں۔",
+    planningFor: (date, city) => `📅 ${city} میں ${date} کے لیے منصوبہ بندی — مشورہ اُس دن کی پیشگوئی کے مطابق ہے۔`,
+    useToday: "آج کا استعمال کریں",
+    listening: "سن اور سوچ رہا ہے…",
+    thinking: "GlamourBot سوچ رہا ہے…",
+    stopSpeaking: "GlamourBot کی آواز روکیں",
+    stopRecording: "ریکارڈنگ روکیں",
+    speakQuestion: "اپنا سوال بولیں",
+    recording: "ریکارڈنگ ہو رہی ہے… ابھی بولیں",
+    inputPlaceholder: "لباس، مواقع، یا مصنوعات کے بارے میں پوچھیں…",
+    send: "بھیجیں",
+    couldntReach: (msg) => `⚠️ بیک اینڈ تک رسائی نہیں ہو سکی: ${msg}`,
+    micError: (msg) => `⚠️ مائیکروفون تک رسائی نہیں ہو سکی: ${msg}`,
+    voiceError: (msg) => `⚠️ صوتی پیغام ناکام ہوگیا: ${msg}`,
+    prompts: [
+      "👗 شادی کے لیے لباس تجویز کریں",
+      "☔ برسات کے موسم میں کیا پہنوں؟",
+      "💼 نوکری کے انٹرویو کے لیے رسمی لباس",
+      "🌙 عید کے لیے ہلکے گلابی لباس کے آئیڈیاز",
+      "🥻 روزمرہ پہننے کے لیے کیژول لان سوٹ",
+    ],
+  },
+};
 
-export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
-  const [messages, setMessages] = useState([
-    { role: "bot", text: "Hi! I'm GlamourBot — ask me about outfits, occasions, or fashion advice. You can write in English or Roman Urdu." },
-  ]);
+export default function ChatbotPanel({ lang = "en", plannedEvent, onClearPlan }) {
+  const t = T[lang];
+  const isUrdu = lang === "ur";
+
+  const [messages, setMessages] = useState([{ role: "bot", text: t.greeting }]);
   const [input, setInput] = useState("");
   const [city, setCity] = useState("");
   const [sending, setSending] = useState(false);
@@ -30,6 +82,14 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   const recordTimerRef = useRef(null);
   const recordStartRef = useRef(0);
 
+  // Swap the greeting language if the user changes it before sending
+  // their first real message (once they've started chatting, we leave
+  // history alone rather than rewriting what they already said).
+  useEffect(() => {
+    setMessages((m) => (m.length === 1 && m[0].role === "bot" ? [{ role: "bot", text: t.greeting }] : m));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
@@ -37,7 +97,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   // Stop any active mic stream if the component unmounts mid-recording
   // (e.g. the user switches tabs while recording).
   useEffect(() => () => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current?.getTracks().forEach((tr) => tr.stop());
     clearInterval(recordTimerRef.current);
   }, []);
 
@@ -61,7 +121,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
       const data = await res.json();
       setMessages((m) => [...m, { role: "bot", text: data.response }]);
     } catch (err) {
-      setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't reach the backend: ${err.message}` }]);
+      setMessages((m) => [...m, { role: "bot", text: t.couldntReach(err.message) }]);
     } finally {
       setSending(false);
     }
@@ -76,11 +136,6 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   };
 
   const startRecording = async () => {
-    // If the bot happens to still be speaking when the user chooses to
-    // record instead, cut it off — but pressing mic while speaking is now
-    // handled as "just stop speaking" (see micClick), so this is mostly a
-    // safety net for edge cases (e.g. speaking ends a split second after
-    // the click registers).
     stopSpeaking();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -94,7 +149,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((tr) => tr.stop());
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         sendVoice(blob);
       };
@@ -107,7 +162,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
         setRecordSeconds(Math.floor((Date.now() - recordStartRef.current) / 1000));
       }, 250);
     } catch (err) {
-      setMessages((m) => [...m, { role: "bot", text: `⚠️ Couldn't access microphone: ${err.message}` }]);
+      setMessages((m) => [...m, { role: "bot", text: t.micError(err.message) }]);
     }
   };
 
@@ -117,8 +172,6 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
     clearInterval(recordTimerRef.current);
     const elapsed = Date.now() - recordStartRef.current;
     if (elapsed < MIN_RECORDING_MS) {
-      // Let it keep recording a little longer rather than send a clip so
-      // short Whisper is likely to mistranscribe it as filler noise.
       setTimeout(() => {
         mediaRecorderRef.current?.stop();
         setIsRecording(false);
@@ -143,8 +196,6 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
       const res = await apiFetch(url, { method: "POST", body: formData });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
 
-      // Headers are percent-encoded on the backend (Urdu script/emoji
-      // aren't valid raw HTTP header bytes) — decode them back here.
       const transcriptHeader = res.headers.get("X-Transcript");
       const responseHeader = res.headers.get("X-Response");
       const transcript = transcriptHeader ? decodeURIComponent(transcriptHeader) : "(voice message)";
@@ -156,13 +207,10 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
       const audioUrl = URL.createObjectURL(audioBlob);
       if (audioPlayerRef.current) {
         audioPlayerRef.current.src = audioUrl;
-        audioPlayerRef.current.play().catch(() => {
-          // Autoplay can be blocked by the browser — not fatal, the text
-          // reply is already shown either way.
-        });
+        audioPlayerRef.current.play().catch(() => {});
       }
     } catch (err) {
-      setMessages((m) => [...m, { role: "bot", text: `⚠️ Voice message failed: ${err.message}` }]);
+      setMessages((m) => [...m, { role: "bot", text: t.voiceError(err.message) }]);
     } finally {
       setVoiceBusy(false);
     }
@@ -175,10 +223,6 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
     }
   };
 
-  // Three-way mic button, matching how ChatGPT's voice mode behaves:
-  // - Bot is speaking → just stop the speech (don't start recording)
-  // - Currently recording → stop recording and send it
-  // - Otherwise → start recording
   const micClick = () => {
     if (isSpeaking) {
       stopSpeaking();
@@ -189,9 +233,6 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
     }
   };
 
-  // Very light markdown: **bold** and bare URLs as clickable links —
-  // matches what the bot actually outputs (product recommendations use
-  // **Title** and a raw URL on the next line).
   const renderText = (text) => {
     const parts = text.split(/(\*\*[^*]+\*\*|https?:\/\/\S+)/g);
     return parts.map((part, i) => {
@@ -212,26 +253,29 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
   return (
     <div style={{ flex: 1, width: "100%", overflowY: "auto" }}>
       <PageHeader
-        eyebrow="Chatbot"
+        eyebrow={t.eyebrow}
         eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
-        title="Share your event, choose the date, and let GlamourAI create a complete, professionally styled look just for you."
-        subtitle="From outfits and shoes to accessories and makeup, every recommendation is thoughtfully curated to match the occasion. Available in English and Urdu."
+        title={t.title}
+        subtitle={t.subtitle}
       />
       <div style={{ padding: "0 clamp(16px, 6vw, 100px) 40px", width: "100%", boxSizing: "border-box" }}>
-      <div style={{ ...S.card, height: "65vh", width: "100%", boxSizing: "border-box", border: `3px solid ${COLORS.accent}` }}>
+      <div
+        dir={isUrdu ? "rtl" : "ltr"}
+        style={{ ...S.card, height: "65vh", width: "100%", boxSizing: "border-box", border: `3px solid ${COLORS.accent}` }}
+      >
         <div style={{ ...S.formGroup, flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <label style={S.label}>CITY (for weather-aware suggestions)</label>
+          <label style={S.label}>{t.cityLabel}</label>
           <input
             style={{ ...S.input, width: 160, border: `1.5px solid ${COLORS.accent}` }}
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            placeholder="e.g. Lahore"
+            placeholder={t.cityPlaceholder}
             disabled={!!plannedEvent}
           />
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {SUGGESTED_PROMPTS.map((p) => (
+          {t.prompts.map((p) => (
             <button
               key={p}
               onClick={() => send(p.replace(/^\p{Emoji}\s*/u, ""))}
@@ -266,15 +310,15 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               background: COLORS.accentSoftBg, border: `1px solid ${COLORS.accent}`,
-              borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent,
+              borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent, flexWrap: "wrap", gap: 8,
             }}
           >
-            <span>📅 Planning for {plannedEvent.date} in {plannedEvent.city} — advice uses that day's forecast.</span>
+            <span>{t.planningFor(plannedEvent.date, plannedEvent.city)}</span>
             <button
               onClick={onClearPlan}
               style={{ background: "none", border: "none", color: COLORS.accent, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}
             >
-              Use today instead
+              {t.useToday}
             </button>
           </div>
         )}
@@ -294,7 +338,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
             <div
               key={i}
               style={{
-                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+                alignSelf: m.role === "user" ? (isUrdu ? "flex-start" : "flex-end") : (isUrdu ? "flex-end" : "flex-start"),
                 maxWidth: "80%",
                 background: m.role === "user" ? COLORS.accentSoftBg : COLORS.surfaceAlt,
                 border: `1.5px solid ${COLORS.accent}`,
@@ -311,7 +355,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
           ))}
           {(sending || voiceBusy) && (
             <div style={S.spinnerWrap}>
-              <span style={S.spinner} /> {voiceBusy ? "Listening & thinking…" : "GlamourBot is thinking…"}
+              <span style={S.spinner} /> {voiceBusy ? t.listening : t.thinking}
             </div>
           )}
         </div>
@@ -335,7 +379,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
             }}
             onClick={micClick}
             disabled={sending || voiceBusy}
-            title={isSpeaking ? "Stop GlamourBot speaking" : isRecording ? "Stop recording" : "Speak your question"}
+            title={isSpeaking ? t.stopSpeaking : isRecording ? t.stopRecording : t.speakQuestion}
           >
             {isSpeaking ? "⏸ Stop" : isRecording ? `⏹ ${recordSeconds}s` : "🎤"}
           </button>
@@ -344,7 +388,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder={isRecording ? "Recording… speak now" : "Ask about outfits, occasions, or products…"}
+            placeholder={isRecording ? t.recording : t.inputPlaceholder}
             disabled={isRecording}
           />
           <button
@@ -352,7 +396,7 @@ export default function ChatbotPanel({ plannedEvent, onClearPlan }) {
             onClick={() => send()}
             disabled={sending || !input.trim() || isRecording}
           >
-            Send
+            {t.send}
           </button>
         </div>
         </div>

@@ -11,7 +11,98 @@ const CATEGORY_COLORS = {
 };
 const CAT_ICON = { upper: "👕", lower: "👖", full: "👗" };
 
-export default function TryOnPanel({ pendingGarment, onConsumePending }) {
+const TR = {
+  en: {
+    eyebrow: "Virtual fitting room",
+    title: "See it before you BUY it.",
+    subtitle: "Experience fashion like never before with GlamourAI's Virtual Try-On. Upload your photo, choose any outfit, and instantly see how it looks on you. Explore styles with confidence and discover your perfect look before making a choice.",
+    tabTryOn: "Try on", tabCatalog: "Catalog", tabUpload: "Upload",
+    couldntLoadGarments: "Could not reach the backend to load garments.",
+    cameraDenied: (msg) => `Camera access denied: ${msg}`,
+    selectImageFile: "Please select an image file",
+    addPhotoFirst: "Add a photo first (upload or capture)",
+    selectGarmentFirst: "Select a garment first",
+    tryonGenerated: "Try-on generated!",
+    generationFailed: (msg) => `Generation failed: ${msg}`,
+    provideNameAndImage: "Provide a name and an image file",
+    uploadedSuccess: "Garment uploaded successfully!",
+    uploadFailed: (msg) => `Upload failed: ${msg}`,
+    uploadPhotoBtn: "📁 Upload photo",
+    useCameraBtn: "📷 Use camera",
+    clickOrDragPhoto: "Click or drag a photo here",
+    startCameraPrompt: "to begin",
+    startCameraBold: "Start Camera",
+    clickWord: "Click",
+    startCameraBtn: "▶ Start Camera",
+    capturePhotoBtn: "⬤ Capture Photo",
+    retakeBtn: "↺ Retake",
+    chooseDifferentBtn: "↺ Choose Different Photo",
+    generatingBtn: "⏳ Generating (up to ~20s)…",
+    generateBtn: "✦ Generate Try-On",
+    resultLabel: "RESULT — drag to compare",
+    downloadResult: "↓ Download Result",
+    garmentCatalog: "GARMENT CATALOG",
+    clear: "✕ Clear",
+    filterAll: "All", filterTops: "Tops", filterBottoms: "Bottoms", filterDresses: "Dresses",
+    noGarmentsFoundUpload: "No garments found. Upload one first.",
+    noGarmentsYet: "No garments yet — upload one to get started.",
+    nameLabel: "NAME", namePlaceholder: "e.g. Gray Kurta",
+    brandLabel: "BRAND", brandPlaceholder: "optional",
+    categoryLabel: "CATEGORY",
+    catUpper: "Upper (shirts, tops)", catLower: "Lower (pants, jeans)", catFull: "Full (dresses, gowns)",
+    tagsLabel: "TAGS (comma separated)", tagsPlaceholder: "casual, summer",
+    garmentImageLabel: "GARMENT IMAGE",
+    uploading: "Uploading…",
+    addToCatalog: "Add to Catalog",
+  },
+  ur: {
+    eyebrow: "ورچوئل فٹنگ روم",
+    title: "خریدنے سے پہلے دیکھ لیں۔",
+    subtitle: "GlamourAI کے ورچوئل ٹرائی آن کے ساتھ فیشن کا نیا تجربہ کریں۔ اپنی تصویر اپلوڈ کریں، کوئی بھی لباس منتخب کریں، اور فوراً دیکھیں یہ آپ پر کیسا لگتا ہے۔ اعتماد کے ساتھ اسٹائلز دریافت کریں اور فیصلہ کرنے سے پہلے اپنا بہترین انداز جانیں۔",
+    tabTryOn: "آزما کر دیکھیں", tabCatalog: "کیٹلاگ", tabUpload: "اپلوڈ",
+    couldntLoadGarments: "لباس لوڈ کرنے کے لیے بیک اینڈ تک رسائی نہیں ہو سکی۔",
+    cameraDenied: (msg) => `کیمرے تک رسائی مسترد کر دی گئی: ${msg}`,
+    selectImageFile: "براہ کرم ایک تصویری فائل منتخب کریں",
+    addPhotoFirst: "پہلے ایک تصویر شامل کریں (اپلوڈ یا کیمرے سے)",
+    selectGarmentFirst: "پہلے ایک لباس منتخب کریں",
+    tryonGenerated: "ٹرائی آن تیار ہوگیا!",
+    generationFailed: (msg) => `تیاری ناکام ہوگئی: ${msg}`,
+    provideNameAndImage: "نام اور تصویری فائل فراہم کریں",
+    uploadedSuccess: "لباس کامیابی سے اپلوڈ ہوگیا!",
+    uploadFailed: (msg) => `اپلوڈ ناکام ہوگیا: ${msg}`,
+    uploadPhotoBtn: "📁 تصویر اپلوڈ کریں",
+    useCameraBtn: "📷 کیمرہ استعمال کریں",
+    clickOrDragPhoto: "تصویر یہاں کلک کریں یا گھسیٹیں",
+    startCameraPrompt: "دبائیں شروع کرنے کے لیے",
+    startCameraBold: "کیمرہ شروع کریں",
+    clickWord: "",
+    startCameraBtn: "▶ کیمرہ شروع کریں",
+    capturePhotoBtn: "⬤ تصویر کھینچیں",
+    retakeBtn: "↺ دوبارہ لیں",
+    chooseDifferentBtn: "↺ مختلف تصویر منتخب کریں",
+    generatingBtn: "⏳ تیار ہو رہا ہے (تقریباً 20 سیکنڈ)…",
+    generateBtn: "✦ ٹرائی آن تیار کریں",
+    resultLabel: "نتیجہ — موازنہ کے لیے گھسیٹیں",
+    downloadResult: "↓ نتیجہ ڈاؤن لوڈ کریں",
+    garmentCatalog: "لباس کا کیٹلاگ",
+    clear: "✕ صاف کریں",
+    filterAll: "تمام", filterTops: "اوپری لباس", filterBottoms: "نچلا لباس", filterDresses: "ڈریسز",
+    noGarmentsFoundUpload: "کوئی لباس نہیں ملا۔ پہلے ایک اپلوڈ کریں۔",
+    noGarmentsYet: "ابھی تک کوئی لباس نہیں — شروع کرنے کے لیے ایک اپلوڈ کریں۔",
+    nameLabel: "نام", namePlaceholder: "مثلاً گرے کرتا",
+    brandLabel: "برانڈ", brandPlaceholder: "اختیاری",
+    categoryLabel: "قسم",
+    catUpper: "اوپری (شرٹس، ٹاپس)", catLower: "نچلا (پینٹس، جینز)", catFull: "مکمل (ڈریسز، گاؤن)",
+    tagsLabel: "ٹیگز (کوما سے الگ)", tagsPlaceholder: "کیژول، گرمی",
+    garmentImageLabel: "لباس کی تصویر",
+    uploading: "اپلوڈ ہو رہا ہے…",
+    addToCatalog: "کیٹلاگ میں شامل کریں",
+  },
+};
+
+export default function TryOnPanel({ lang = "en", pendingGarment, onConsumePending }) {
+  const tr = TR[lang];
+  const isUrdu = lang === "ur";
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -42,7 +133,7 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
     apiFetch(`${API_BASE}/catalog/`)
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => setGarments(Array.isArray(data) ? data : []))
-      .catch(() => showNotification("Could not reach the backend to load garments.", "error"));
+      .catch(() => showNotification(tr.couldntLoadGarments, "error"));
   }, [showNotification]);
 
   useEffect(() => {
@@ -73,7 +164,7 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
       }
       setCamActive(true);
     } catch (err) {
-      showNotification("Camera access denied: " + err.message, "error");
+      showNotification(tr.cameraDenied(err.message), "error");
     }
   }, [showNotification]);
 
@@ -123,7 +214,7 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
 
   const handlePersonUpload = (file) => {
     if (!file || !file.type.startsWith("image/")) {
-      showNotification("Please select an image file", "error");
+      showNotification(tr.selectImageFile, "error");
       return;
     }
     if (personPreview) URL.revokeObjectURL(personPreview);
@@ -143,11 +234,11 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
 
   const generateTryOn = async () => {
     if (!personFile) {
-      showNotification("Add a photo first (upload or capture)", "error");
+      showNotification(tr.addPhotoFirst, "error");
       return;
     }
     if (!selected) {
-      showNotification("Select a garment first", "error");
+      showNotification(tr.selectGarmentFirst, "error");
       return;
     }
     setGenerating(true);
@@ -163,9 +254,9 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
       }
       const blob = await res.blob();
       setResultUrl(URL.createObjectURL(blob));
-      showNotification("Try-on generated!", "success");
+      showNotification(tr.tryonGenerated, "success");
     } catch (err) {
-      showNotification("Generation failed: " + err.message, "error");
+      showNotification(tr.generationFailed(err.message), "error");
     } finally {
       setGenerating(false);
     }
@@ -181,7 +272,7 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
 
   const handleUploadGarment = async () => {
     if (!uploadFile || !uploadForm.name) {
-      showNotification("Provide a name and an image file", "error");
+      showNotification(tr.provideNameAndImage, "error");
       return;
     }
     setUploading(true);
@@ -199,11 +290,11 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
       }
       const data = await res.json();
       setGarments((prev) => [...prev, data]);
-      showNotification("Garment uploaded successfully!", "success");
+      showNotification(tr.uploadedSuccess, "success");
       setUploadForm({ name: "", brand: "", category: "upper", tags: "" });
       setUploadFile(null);
     } catch (err) {
-      showNotification("Upload failed: " + err.message, "error");
+      showNotification(tr.uploadFailed(err.message), "error");
     } finally {
       setUploading(false);
     }
@@ -214,22 +305,22 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
   const GarmentPicker = () => (
     <div style={T.picker}>
       <div style={T.pickerHeader}>
-        <span style={T.pickerTitle}>GARMENT CATALOG</span>
+        <span style={T.pickerTitle}>{tr.garmentCatalog}</span>
         {selected && (
           <button style={T.btnClear} onClick={() => setSelected(null)}>
-            ✕ Clear
+            {tr.clear}
           </button>
         )}
       </div>
       <div style={T.filterRow}>
         {["all", "upper", "lower", "full"].map((c) => (
           <button key={c} style={{ ...T.chip, ...(category === c ? T.chipActive : {}) }} onClick={() => setCategory(c)}>
-            {c === "all" ? "All" : c === "upper" ? "Tops" : c === "lower" ? "Bottoms" : "Dresses"}
+            {c === "all" ? tr.filterAll : c === "upper" ? tr.filterTops : c === "lower" ? tr.filterBottoms : tr.filterDresses}
           </button>
         ))}
       </div>
       <div style={T.garmentList}>
-        {filtered.length === 0 && <div style={T.emptyMsg}>No garments found. Upload one first.</div>}
+        {filtered.length === 0 && <div style={T.emptyMsg}>{tr.noGarmentsFoundUpload}</div>}
         {filtered.map((g) => {
           const col = CATEGORY_COLORS[g.category] || CATEGORY_COLORS.upper;
           const isSel = selected?.id === g.id;
@@ -272,18 +363,18 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
       <PageHeader
-        eyebrow="Virtual fitting room"
+        eyebrow={tr.eyebrow}
         eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
-        title="See it before you BUY it."
-        subtitle="Experience fashion like never before with GlamourAI's Virtual Try-On. Upload your photo, choose any outfit, and instantly see how it looks on you. Explore styles with confidence and discover your perfect look before making a choice."
+        title={tr.title}
+        subtitle={tr.subtitle}
       />
-      <div style={{ ...T.subNav, padding: "0 clamp(16px, 6vw, 100px) 12px" }}>
+      <div dir={isUrdu ? "rtl" : "ltr"} style={{ ...T.subNav, padding: "0 clamp(16px, 6vw, 100px) 12px" }}>
         {[
-          ["tryon", "Try on"],
-          ["catalog", "Catalog"],
-          ["upload", "Upload"],
-        ].map(([t, label]) => (
-          <button key={t} style={{ ...T.subNavBtn, ...(subTab === t ? T.subNavBtnActive : {}) }} onClick={() => setSubTab(t)}>
+          ["tryon", tr.tabTryOn],
+          ["catalog", tr.tabCatalog],
+          ["upload", tr.tabUpload],
+        ].map(([tabKey, label]) => (
+          <button key={tabKey} style={{ ...T.subNavBtn, ...(subTab === tabKey ? T.subNavBtnActive : {}) }} onClick={() => setSubTab(tabKey)}>
             {label}
           </button>
         ))}
@@ -303,14 +394,14 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
       )}
 
       {subTab === "tryon" && (
-        <div style={T.tryonRoot}>
+        <div dir={isUrdu ? "rtl" : "ltr"} style={T.tryonRoot}>
           <div style={T.leftPane}>
             <div style={T.modeToggle}>
               <button style={{ ...T.modeBtn, ...(personSource === "upload" ? T.modeBtnActive : {}) }} onClick={() => switchPersonSource("upload")}>
-                📁 Upload photo
+                {tr.uploadPhotoBtn}
               </button>
               <button style={{ ...T.modeBtn, ...(personSource === "camera" ? T.modeBtnActive : {}) }} onClick={() => switchPersonSource("camera")}>
-                📷 Use camera
+                {tr.useCameraBtn}
               </button>
             </div>
 
@@ -328,7 +419,7 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
                       }}
                     >
                       <span style={{ fontSize: 40 }}>🖼️</span>
-                      <p style={{ color: COLORS.textSecondary, marginTop: 10 }}>Click or drag a photo here</p>
+                      <p style={{ color: COLORS.textSecondary, marginTop: 10 }}>{tr.clickOrDragPhoto}</p>
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -353,7 +444,11 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
                         <div style={T.camPlaceholder}>
                           <span style={{ fontSize: 40 }}>📷</span>
                           <p style={{ color: COLORS.textSecondary, marginTop: 10 }}>
-                            Click <b>Start Camera</b> to begin
+                            {isUrdu ? (
+                              <>{tr.startCameraPrompt} <b>{tr.startCameraBold}</b> پر کلک کریں</>
+                            ) : (
+                              <>Click <b>Start Camera</b> to begin</>
+                            )}
                           </p>
                         </div>
                       )}
@@ -366,22 +461,22 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
             <div style={T.controls}>
               {personSource === "camera" && !personPreview && !camActive && (
                 <button style={T.btnPrimary} onClick={startCamera}>
-                  ▶ Start Camera
+                  {tr.startCameraBtn}
                 </button>
               )}
               {personSource === "camera" && camActive && (
                 <button style={T.btnPrimary} onClick={capturePhoto}>
-                  ⬤ Capture Photo
+                  {tr.capturePhotoBtn}
                 </button>
               )}
               {personSource === "camera" && personPreview && (
                 <button style={T.btnSecondary} onClick={retakePhoto}>
-                  ↺ Retake
+                  {tr.retakeBtn}
                 </button>
               )}
               {personSource === "upload" && personPreview && (
                 <button style={T.btnSecondary} onClick={() => switchPersonSource("upload")}>
-                  ↺ Choose Different Photo
+                  {tr.chooseDifferentBtn}
                 </button>
               )}
               <button
@@ -393,16 +488,16 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
                 onClick={generateTryOn}
                 disabled={generating || !personFile || !selected}
               >
-                {generating ? "⏳ Generating (up to ~20s)…" : "✦ Generate Try-On"}
+                {generating ? tr.generatingBtn : tr.generateBtn}
               </button>
             </div>
 
             {resultUrl && (
               <div style={T.resultBox}>
-                <p style={T.colLabel}>RESULT — drag to compare</p>
+                <p style={T.colLabel}>{tr.resultLabel}</p>
                 <BeforeAfterSlider before={personPreview} after={resultUrl} height={380} />
                 <button style={T.btnSave} onClick={downloadResult}>
-                  ↓ Download Result
+                  {tr.downloadResult}
                 </button>
               </div>
             )}
@@ -413,16 +508,16 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
       )}
 
       {subTab === "catalog" && (
-        <div style={T.catalogPage}>
+        <div dir={isUrdu ? "rtl" : "ltr"} style={T.catalogPage}>
           <div style={T.filterRow}>
             {["all", "upper", "lower", "full"].map((c) => (
               <button key={c} style={{ ...T.chip, ...(category === c ? T.chipActive : {}) }} onClick={() => setCategory(c)}>
-                {c === "all" ? "All" : c === "upper" ? "Tops" : c === "lower" ? "Bottoms" : "Dresses"}
+                {c === "all" ? tr.filterAll : c === "upper" ? tr.filterTops : c === "lower" ? tr.filterBottoms : tr.filterDresses}
               </button>
             ))}
           </div>
           {filtered.length === 0 ? (
-            <div style={T.emptyMsg}>No garments yet — upload one to get started.</div>
+            <div style={T.emptyMsg}>{tr.noGarmentsYet}</div>
           ) : (
             <div style={T.catalogGrid}>
               {filtered.map((g) => {
@@ -449,36 +544,36 @@ export default function TryOnPanel({ pendingGarment, onConsumePending }) {
       )}
 
       {subTab === "upload" && (
-        <div style={T.uploadPage}>
+        <div dir={isUrdu ? "rtl" : "ltr"} style={T.uploadPage}>
           <div style={T.uploadCard}>
             <div style={T.formGrid}>
               <div style={T.formGroup}>
-                <label style={T.label}>NAME</label>
-                <input style={T.input} value={uploadForm.name} onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })} placeholder="e.g. Gray Kurta" />
+                <label style={T.label}>{tr.nameLabel}</label>
+                <input style={T.input} value={uploadForm.name} onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })} placeholder={tr.namePlaceholder} />
               </div>
               <div style={T.formGroup}>
-                <label style={T.label}>BRAND</label>
-                <input style={T.input} value={uploadForm.brand} onChange={(e) => setUploadForm({ ...uploadForm, brand: e.target.value })} placeholder="optional" />
+                <label style={T.label}>{tr.brandLabel}</label>
+                <input style={T.input} value={uploadForm.brand} onChange={(e) => setUploadForm({ ...uploadForm, brand: e.target.value })} placeholder={tr.brandPlaceholder} />
               </div>
               <div style={T.formGroup}>
-                <label style={T.label}>CATEGORY</label>
+                <label style={T.label}>{tr.categoryLabel}</label>
                 <select style={T.input} value={uploadForm.category} onChange={(e) => setUploadForm({ ...uploadForm, category: e.target.value })}>
-                  <option value="upper">Upper (shirts, tops)</option>
-                  <option value="lower">Lower (pants, jeans)</option>
-                  <option value="full">Full (dresses, gowns)</option>
+                  <option value="upper">{tr.catUpper}</option>
+                  <option value="lower">{tr.catLower}</option>
+                  <option value="full">{tr.catFull}</option>
                 </select>
               </div>
               <div style={T.formGroup}>
-                <label style={T.label}>TAGS (comma separated)</label>
-                <input style={T.input} value={uploadForm.tags} onChange={(e) => setUploadForm({ ...uploadForm, tags: e.target.value })} placeholder="casual, summer" />
+                <label style={T.label}>{tr.tagsLabel}</label>
+                <input style={T.input} value={uploadForm.tags} onChange={(e) => setUploadForm({ ...uploadForm, tags: e.target.value })} placeholder={tr.tagsPlaceholder} />
               </div>
             </div>
             <div style={T.formGroup}>
-              <label style={T.label}>GARMENT IMAGE</label>
+              <label style={T.label}>{tr.garmentImageLabel}</label>
               <input type="file" accept="image/*" onChange={(e) => setUploadFile(e.target.files?.[0] || null)} />
             </div>
             <button style={{ ...T.btnApplyBig, opacity: uploading ? 0.6 : 1 }} onClick={handleUploadGarment} disabled={uploading}>
-              {uploading ? "Uploading…" : "Add to Catalog"}
+              {uploading ? tr.uploading : tr.addToCatalog}
             </button>
           </div>
         </div>

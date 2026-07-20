@@ -4,29 +4,86 @@ import { apiFetch } from "../api.js";
 import PageHeader from "./PageHeader.jsx";
 
 const CATEGORY_OPTIONS = [
-  ["", "Any"],
-  ["shirt", "Shirts"],
-  ["kurta", "Kurtas"],
-  ["lawn suit", "Lawn Suits"],
-  ["heels", "Heels"],
-  ["sneakers", "Sneakers"],
-  ["bag", "Bags"],
-  ["jewelry", "Jewelry"],
-  ["dress", "Dresses"],
+  ["", "Any", "کوئی بھی"],
+  ["shirt", "Shirts", "شرٹس"],
+  ["kurta", "Kurtas", "کرتے"],
+  ["lawn suit", "Lawn Suits", "لان سوٹ"],
+  ["heels", "Heels", "ہیلز"],
+  ["sneakers", "Sneakers", "اسنیکرز"],
+  ["bag", "Bags", "بیگز"],
+  ["jewelry", "Jewelry", "زیورات"],
+  ["dress", "Dresses", "ڈریسز"],
 ];
 
 const COLOR_OPTIONS = [
-  ["", "Any"],
-  ["red", "Red"],
-  ["maroon", "Maroon"],
-  ["black", "Black"],
-  ["white", "White"],
-  ["blue", "Blue"],
-  ["pink", "Pink"],
-  ["gold", "Gold"],
-  ["green", "Green"],
-  ["beige", "Beige"],
+  ["", "Any", "کوئی بھی"],
+  ["red", "Red", "سرخ"],
+  ["maroon", "Maroon", "میرون"],
+  ["black", "Black", "کالا"],
+  ["white", "White", "سفید"],
+  ["blue", "Blue", "نیلا"],
+  ["pink", "Pink", "گلابی"],
+  ["gold", "Gold", "سنہرا"],
+  ["green", "Green", "سبز"],
+  ["beige", "Beige", "بیج"],
 ];
+
+const T = {
+  en: {
+    eyebrow: "Recommendation system",
+    title: "Tell it what you need, get matches back.",
+    subtitle: "Discover dresses, accessories, and shoes curated just for you. Simply describe what you're looking for, choose your preferred color and price range, and let us bring you personalized recommendations that match your unique style.",
+    lookingForLabel: "WHAT ARE YOU LOOKING FOR?",
+    lookingForPlaceholder: "e.g. formal red heels for an engagement",
+    categoryLabel: "CATEGORY (OPTIONAL)",
+    colorLabel: "COLOR (OPTIONAL)",
+    budgetLabel: "MAX BUDGET (PKR, OPTIONAL)",
+    budgetPlaceholder: "e.g. 12000",
+    cityLabel: "CITY (OPTIONAL — ENABLES WEATHER-AWARE FABRIC SUGGESTIONS)",
+    cityPlaceholder: "e.g. Lahore",
+    planningFor: (date, city) => `📅 Planning for ${date} in ${city} — suggestions use that day's forecast.`,
+    useToday: "Use today instead",
+    searching: "Searching…",
+    findProducts: "🔍 Find products",
+    saved: (n) => `♡ Saved (${n})`,
+    tellFirst: "Tell it what you're looking for first.",
+    couldntReach: (msg) => `Couldn't reach the backend: ${msg}`,
+    couldntTryOn: (msg) => `Couldn't send that to Try-On: ${msg}`,
+    nothingSaved: "Nothing saved yet — tap the heart on a result to keep it here.",
+    match: (pct) => `${pct}% match`,
+    removeSaved: "Remove from saved",
+    save: "Save",
+    view: "View",
+    tryOn: "Try On",
+  },
+  ur: {
+    eyebrow: "تجاویز کا نظام",
+    title: "بتائیں آپ کو کیا چاہیے، ہم آپ کو ملتی جلتی اشیاء دکھائیں گے۔",
+    subtitle: "اپنے لیے منتخب کردہ ڈریسز، لوازمات اور جوتے دریافت کریں۔ بس بتائیں آپ کیا تلاش کر رہے ہیں، اپنا پسندیدہ رنگ اور قیمت کی حد منتخب کریں، اور ہم آپ کو آپ کے اپنے انداز سے میل کھاتی ذاتی تجاویز فراہم کریں گے۔",
+    lookingForLabel: "آپ کیا تلاش کر رہے ہیں؟",
+    lookingForPlaceholder: "مثلاً منگنی کے لیے رسمی سرخ ہیلز",
+    categoryLabel: "قسم (اختیاری)",
+    colorLabel: "رنگ (اختیاری)",
+    budgetLabel: "زیادہ سے زیادہ بجٹ (روپے، اختیاری)",
+    budgetPlaceholder: "مثلاً 12000",
+    cityLabel: "شہر (اختیاری — موسم کے مطابق کپڑے کی تجاویز کے لیے)",
+    cityPlaceholder: "مثلاً لاہور",
+    planningFor: (date, city) => `📅 ${city} میں ${date} کے لیے منصوبہ بندی — تجاویز اُس دن کی پیشگوئی کے مطابق ہیں۔`,
+    useToday: "آج کا استعمال کریں",
+    searching: "تلاش ہو رہی ہے…",
+    findProducts: "🔍 مصنوعات تلاش کریں",
+    saved: (n) => `♡ محفوظ شدہ (${n})`,
+    tellFirst: "پہلے بتائیں آپ کیا تلاش کر رہے ہیں۔",
+    couldntReach: (msg) => `بیک اینڈ تک رسائی نہیں ہو سکی: ${msg}`,
+    couldntTryOn: (msg) => `اسے ٹرائی آن پر نہیں بھیجا جا سکا: ${msg}`,
+    nothingSaved: "ابھی تک کچھ محفوظ نہیں کیا گیا — کسی نتیجے پر دل کے آئیکن کو دبائیں۔",
+    match: (pct) => `${pct}% موزوں`,
+    removeSaved: "محفوظ شدہ سے ہٹائیں",
+    save: "محفوظ کریں",
+    view: "دیکھیں",
+    tryOn: "ٹرائی آن",
+  },
+};
 
 // The backend doesn't return a numeric match score — this gives each
 // result a plausible, deterministic "closeness" figure (highest-ranked
@@ -40,7 +97,10 @@ function productKey(p) {
   return p.url || `${p.brand}-${p.title}`;
 }
 
-export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
+export default function RecommendPanel({ lang = "en", plannedEvent, onClearPlan, onTryOn }) {
+  const t = T[lang];
+  const isUrdu = lang === "ur";
+
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [color, setColor] = useState("");
@@ -63,7 +123,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
     const effectiveQuery = overrides.query ?? query;
     const effectiveCategory = overrides.category !== undefined ? overrides.category : category;
     if (!effectiveQuery.trim()) {
-      setError("Tell it what you're looking for first.");
+      setError(t.tellFirst);
       return;
     }
     setSearching(true);
@@ -91,7 +151,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
       setMessage(data.message || "");
       setWeatherNote(data.weather_note || "");
     } catch (err) {
-      setError(`Couldn't reach the backend: ${err.message}`);
+      setError(t.couldntReach(err.message));
       setProducts([]);
     } finally {
       setSearching(false);
@@ -131,7 +191,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
       const garment = await res.json();
       onTryOn?.(garment);
     } catch (err) {
-      setError(`Couldn't send that to Try-On: ${err.message}`);
+      setError(t.couldntTryOn(err.message));
     } finally {
       setTryOnBusyKey(null);
     }
@@ -140,42 +200,42 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
   return (
     <div style={{ flex: 1, overflowY: "auto" }}>
       <PageHeader
-        eyebrow="Recommendation system"
+        eyebrow={t.eyebrow}
         eyebrowStyle={{ fontSize: 22, fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5 }}
-        title="Tell it what you need, get matches back."
-        subtitle="Discover dresses, accessories, and shoes curated just for you. Simply describe what you're looking for, choose your preferred color and price range, and let us bring you personalized recommendations that match your unique style."
+        title={t.title}
+        subtitle={t.subtitle}
       />
 
-      <div style={{ padding: "0 clamp(16px, 6vw, 100px) 48px" }}>
+      <div dir={isUrdu ? "rtl" : "ltr"} style={{ padding: "0 clamp(16px, 6vw, 100px) 48px" }}>
         <div style={{ ...S.card, border: `3px solid ${COLORS.accent}`, maxWidth: 760, margin: "0 auto" }}>
           <div style={S.formGroup}>
-            <label style={S.label}>WHAT ARE YOU LOOKING FOR?</label>
+            <label style={S.label}>{t.lookingForLabel}</label>
             <input
               style={fieldStyle}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="e.g. formal red heels for an engagement"
+              placeholder={t.lookingForPlaceholder}
             />
           </div>
 
           <div style={S.formGrid}>
             <div style={S.formGroup}>
-              <label style={S.label}>CATEGORY (OPTIONAL)</label>
+              <label style={S.label}>{t.categoryLabel}</label>
               <select style={fieldStyle} value={category} onChange={(e) => setCategory(e.target.value)}>
-                {CATEGORY_OPTIONS.map(([v, label]) => (
+                {CATEGORY_OPTIONS.map(([v, enLabel, urLabel]) => (
                   <option key={v} value={v}>
-                    {label}
+                    {isUrdu ? urLabel : enLabel}
                   </option>
                 ))}
               </select>
             </div>
             <div style={S.formGroup}>
-              <label style={S.label}>COLOR (OPTIONAL)</label>
+              <label style={S.label}>{t.colorLabel}</label>
               <select style={fieldStyle} value={color} onChange={(e) => setColor(e.target.value)}>
-                {COLOR_OPTIONS.map(([v, label]) => (
+                {COLOR_OPTIONS.map(([v, enLabel, urLabel]) => (
                   <option key={v} value={v}>
-                    {label}
+                    {isUrdu ? urLabel : enLabel}
                   </option>
                 ))}
               </select>
@@ -184,23 +244,23 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
 
           <div style={S.formGrid}>
             <div style={S.formGroup}>
-              <label style={S.label}>MAX BUDGET (PKR, OPTIONAL)</label>
+              <label style={S.label}>{t.budgetLabel}</label>
               <input
                 style={fieldStyle}
                 type="number"
                 min="0"
                 value={maxBudget}
                 onChange={(e) => setMaxBudget(e.target.value)}
-                placeholder="e.g. 12000"
+                placeholder={t.budgetPlaceholder}
               />
             </div>
             <div style={S.formGroup}>
-              <label style={S.label}>CITY (OPTIONAL — ENABLES WEATHER-AWARE FABRIC SUGGESTIONS)</label>
+              <label style={S.label}>{t.cityLabel}</label>
               <input
                 style={fieldStyle}
                 value={plannedEvent?.city || city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Lahore"
+                placeholder={t.cityPlaceholder}
                 disabled={!!plannedEvent}
               />
             </div>
@@ -211,22 +271,22 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
               style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 background: COLORS.accentSoftBg, border: `1px solid ${COLORS.accent}`,
-                borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent,
+                borderRadius: 8, padding: "8px 12px", fontSize: 12, color: COLORS.accent, flexWrap: "wrap", gap: 8,
               }}
             >
-              <span>📅 Planning for {plannedEvent.date} in {plannedEvent.city} — suggestions use that day's forecast.</span>
+              <span>{t.planningFor(plannedEvent.date, plannedEvent.city)}</span>
               <button
                 onClick={onClearPlan}
                 style={{ background: "none", border: "none", color: COLORS.accent, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}
               >
-                Use today instead
+                {t.useToday}
               </button>
             </div>
           )}
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button style={{ ...S.btnPrimary, opacity: searching ? 0.6 : 1 }} onClick={() => findProducts()} disabled={searching}>
-              {searching ? "Searching…" : "🔍 Find products"}
+              {searching ? t.searching : t.findProducts}
             </button>
             <button
               style={{
@@ -235,7 +295,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
               }}
               onClick={() => setShowSavedOnly((v) => !v)}
             >
-              ♡ Saved ({savedCount})
+              {t.saved(savedCount)}
             </button>
           </div>
 
@@ -248,7 +308,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
 
         {visibleProducts.length === 0 && showSavedOnly && (
           <p style={{ marginTop: 24, fontSize: 13, color: COLORS.textMuted, textAlign: "center" }}>
-            Nothing saved yet — tap the heart on a result to keep it here.
+            {t.nothingSaved}
           </p>
         )}
 
@@ -280,19 +340,19 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
                   {!showSavedOnly && (
                     <span
                       style={{
-                        position: "absolute", top: 10, right: 10, zIndex: 1,
+                        position: "absolute", top: 10, [isUrdu ? "left" : "right"]: 10, zIndex: 1,
                         background: COLORS.accent, color: "#fff", fontSize: 11, fontWeight: 600,
                         padding: "4px 10px", borderRadius: 20,
                       }}
                     >
-                      {pseudoMatch(i)}% match
+                      {t.match(pseudoMatch(i))}
                     </span>
                   )}
                   <button
                     onClick={() => toggleSave(p)}
-                    title={isSaved ? "Remove from saved" : "Save"}
+                    title={isSaved ? t.removeSaved : t.save}
                     style={{
-                      position: "absolute", top: 10, left: 10, zIndex: 1,
+                      position: "absolute", top: 10, [isUrdu ? "right" : "left"]: 10, zIndex: 1,
                       background: COLORS.surface, border: `1px solid ${COLORS.border}`,
                       color: isSaved ? COLORS.accent : COLORS.textSecondary,
                       width: 30, height: 30, borderRadius: "50%", cursor: "pointer", fontSize: 14,
@@ -325,7 +385,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
                         rel="noreferrer"
                         style={{ ...S.btnSecondary, flex: 1, textAlign: "center", textDecoration: "none", fontSize: 12, padding: "7px 0" }}
                       >
-                        View
+                        {t.view}
                       </a>
                       <button
                         style={{
@@ -335,7 +395,7 @@ export default function RecommendPanel({ plannedEvent, onClearPlan, onTryOn }) {
                         onClick={() => tryThisOn(p)}
                         disabled={tryOnBusyKey === key}
                       >
-                        {tryOnBusyKey === key ? "…" : "Try On"}
+                        {tryOnBusyKey === key ? "…" : t.tryOn}
                       </button>
                     </div>
                   </div>

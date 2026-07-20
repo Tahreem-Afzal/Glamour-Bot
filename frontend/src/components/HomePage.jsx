@@ -2,12 +2,12 @@ import { useState } from "react";
 import { COLORS, FONT_DISPLAY } from "../styles.js";
 
 const CARDS = [
-  { icon: "🏠", title: "Home", desc: "Back to the start", tab: "home" },
-  { icon: "🛍️", title: "Recommendation system", desc: "Find matching pieces", tab: "recommend" },
-  { icon: "💬", title: "Chatbot", desc: "Get styling advice", tab: "chatbot" },
-  { icon: "✨", title: "Image generation", desc: "From fabric to garment", tab: "imagegen" },
-  { icon: "👗", title: "Try on", desc: "See it on yourself", tab: "tryon" },
-  { icon: "ℹ️", title: "About us", desc: "Meet the team", tab: "about" },
+  { icon: "🏠", title: "Home", titleUr: "ہوم", desc: "Back to the start", descUr: "شروع میں واپس جائیں", tab: "home" },
+  { icon: "🛍️", title: "Recommendation system", titleUr: "تجاویز کا نظام", desc: "Find matching pieces", descUr: "ملتی جلتی اشیاء تلاش کریں", tab: "recommend" },
+  { icon: "💬", title: "Chatbot", titleUr: "چیٹ بوٹ", desc: "Get styling advice", descUr: "اسٹائلنگ مشورہ حاصل کریں", tab: "chatbot" },
+  { icon: "✨", title: "Image generation", titleUr: "تصویر کی تخلیق", desc: "From fabric to garment", descUr: "کپڑے سے لباس تک", tab: "imagegen" },
+  { icon: "👗", title: "Try on", titleUr: "آزما کر دیکھیں", desc: "See it on yourself", descUr: "خود پر دیکھیں", tab: "tryon" },
+  { icon: "ℹ️", title: "About us", titleUr: "ہمارے بارے میں", desc: "Meet the team", descUr: "ٹیم سے ملیں", tab: "about" },
 ];
 
 const COPY = {
@@ -133,6 +133,7 @@ export default function HomePage({ onNavigate, lang = "en" }) {
 
       <div
         id="how-it-works"
+        dir={isUrdu ? "rtl" : "ltr"}
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
@@ -165,15 +166,15 @@ export default function HomePage({ onNavigate, lang = "en" }) {
             >
               <div style={{ fontSize: 26, marginBottom: 10 }}>{s.icon}</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: isCurrent ? "#fff" : COLORS.textPrimary }}>
-                {s.title}
+                {isUrdu ? s.titleUr : s.title}
                 {isCurrent && (
                   <span style={{ display: "block", fontSize: 9, fontWeight: 700, letterSpacing: 1, color: "#fff", opacity: 0.85, marginTop: 2 }}>
-                    YOU ARE HERE
+                    {isUrdu ? "آپ یہاں ہیں" : "YOU ARE HERE"}
                   </span>
                 )}
               </div>
               <div style={{ fontSize: 12, color: isCurrent ? "rgba(255,255,255,0.85)" : COLORS.textSecondary, marginTop: 3 }}>
-                {s.desc}
+                {isUrdu ? s.descUr : s.desc}
               </div>
               <span
                 style={{
@@ -183,11 +184,11 @@ export default function HomePage({ onNavigate, lang = "en" }) {
                   color: isCurrent ? "#fff" : COLORS.accent,
                   fontWeight: 700,
                   opacity: hovered ? 1 : 0,
-                  transform: hovered ? "translateX(0)" : "translateX(-6px)",
+                  transform: hovered ? "translateX(0)" : `translateX(${isUrdu ? "6px" : "-6px"})`,
                   transition: "opacity 0.15s, transform 0.15s",
                 }}
               >
-                →
+                {isUrdu ? "←" : "→"}
               </span>
             </button>
           );
