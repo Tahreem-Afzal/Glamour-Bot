@@ -90,7 +90,7 @@ export default function HomePage({ onNavigate, lang = "en" }) {
                 textAlign: isUrdu ? "right" : "left", lineHeight: 1.5,
               }}
             >
-              <b style={{ color: COLORS.textPrimary, fontWeight: 800 }}>GalmourBot:</b>{" "}
+              <b style={{ color: COLORS.accent, fontWeight: 800 }}>GalmourBot:</b>{" "}
               An AI-Enhanced Smart System for Dress Selection and Accessories Matching
             </p>
             <h1
