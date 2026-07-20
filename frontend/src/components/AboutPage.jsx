@@ -64,7 +64,7 @@ function SectionLabel({ children }) {
   return (
     <p
       style={{
-        fontSize: 11,
+        fontSize: 13,
         letterSpacing: 1.5,
         fontWeight: 700,
         color: COLORS.accent,
@@ -114,11 +114,11 @@ function PersonCard({ name, role, detail, description }) {
         👤
       </div>
       <div>
-        <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>{name}</p>
-        <p style={{ margin: "2px 0 4px", fontSize: 12, color: COLORS.accentDark, fontWeight: 600 }}>{role}</p>
-        <p style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary }}>{detail}</p>
+        <p style={{ margin: 0, fontSize: 19, fontWeight: 600, color: COLORS.textPrimary }}>{name}</p>
+        <p style={{ margin: "3px 0 5px", fontSize: 14, color: COLORS.accentDark, fontWeight: 600 }}>{role}</p>
+        <p style={{ margin: 0, fontSize: 14, color: COLORS.textSecondary }}>{detail}</p>
         {description && (
-          <p style={{ margin: "8px 0 0", fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.6 }}>
+          <p style={{ margin: "10px 0 0", fontSize: 15, color: COLORS.textSecondary, lineHeight: 1.65 }}>
             {description}
           </p>
         )}
@@ -191,7 +191,7 @@ export default function AboutPage({ lang = "en" }) {
               boxSizing: "border-box",
             }}
           >
-            <p style={{ margin: 0, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.8 }}>
+            <p style={{ margin: 0, fontSize: 15, color: COLORS.textSecondary, lineHeight: 1.8 }}>
               {t.projectPara1}
               <br /><br />
               {t.projectPara2}
@@ -211,7 +211,7 @@ export default function AboutPage({ lang = "en" }) {
               boxSizing: "border-box",
             }}
           >
-            <p style={{ margin: 0, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.8 }}>
+            <p style={{ margin: 0, fontSize: 15, color: COLORS.textSecondary, lineHeight: 1.8 }}>
               {t.thought}
             </p>
           </div>
