@@ -92,6 +92,25 @@ DEFAULT_BRAND_DOMAINS = [
     # Jewelry
     "nayabjewellery.com",
     "divat.pk",
+    # Bridal / formal / menswear — verified live (2026-07-20): confirmed
+    # genuine Shopify store (Shopify meta tags, cdn/shop/ asset paths,
+    # "Powered by Shopify" footer), 101+ real bridal products with real
+    # PKR prices at time of check.
+    "hussainrehar.com",
+    # Menswear (including wedding/sherwani/couture) — verified live
+    # (2026-07-20): confirmed genuine Shopify store, real products
+    # Rs. 12,500–45,000 at time of check.
+    "amiradnan.com",
+    # Bridal / formal — verified live (2026-07-20): confirmed genuine
+    # Shopify store, real bridal/formal products Rs. 220,000–480,000
+    # (ultra-premium designer tier) at time of check.
+    "erumkhanstores.com",
+    # Kids — verified live (2026-07-20): confirmed genuine Shopify store,
+    # 155+ girls' and 231+ boys' products with real PKR prices at time
+    # of check.
+    "cocobee.com.pk",
+    # Kids — verified live (2026-07-20): confirmed genuine Shopify store.
+    "minnieminors.com",
 ]
 
 # ADD_VERIFIED_DOMAINS: put confirmed real Shopify domains here once you've
@@ -152,6 +171,45 @@ OCCASION_EXPANSION = {
     "semi-formal": ["formal", "embroidered", "chiffon", "organza", "net", "smart"],
     "summer":     ["lawn", "cotton", "linen", "chiffon"],
     "winter":     ["velvet", "khaddar", "wool", "karandi"],
+}
+
+# The default OCCASION_EXPANSION above was built for clothing (silk,
+# chiffon, embroidered...) — those words essentially never appear in
+# jewelry or bag titles, so an occasion search like "bridal jewelry"
+# would correctly filter down to the jewelry category but then couldn't
+# actually distinguish a plain piece from a bridal-appropriate one. These
+# give each of those two categories their own occasion vocabulary instead.
+OCCASION_EXPANSION_JEWELRY = {
+    "wedding":     ["kundan", "polki", "bridal", "heavy", "statement", "choker", "stone", "meenakari", "jhumka"],
+    "baraat":      ["kundan", "polki", "bridal", "heavy", "statement", "choker", "stone", "meenakari", "jhumka"],
+    "walima":      ["kundan", "polki", "bridal", "heavy", "statement", "choker", "stone", "meenakari", "jhumka"],
+    "bridal":      ["kundan", "polki", "bridal", "heavy", "statement", "choker", "stone", "meenakari", "jhumka", "wedding"],
+    "engagement":  ["kundan", "polki", "statement", "stone", "choker", "danglers"],
+    "mehndi":      ["jhumka", "danglers", "colorful", "statement", "oxidized"],
+    "party":       ["statement", "stone", "danglers", "cocktail"],
+    "formal":      ["pearl", "stud", "classic", "minimal"],
+    "semiformal":  ["pearl", "stud", "classic"],
+    "semi-formal": ["pearl", "stud", "classic"],
+    "office":      ["stud", "minimal", "pearl", "simple"],
+    "casual":      ["minimal", "simple", "stud", "oxidized"],
+    "summer":      ["light", "minimal"],
+    "winter":      ["statement", "heavy"],
+}
+OCCASION_EXPANSION_BAG = {
+    "wedding":     ["clutch", "potli", "embellished", "stone", "evening", "bridal"],
+    "baraat":      ["clutch", "potli", "embellished", "stone", "evening"],
+    "walima":      ["clutch", "potli", "embellished", "stone", "evening"],
+    "bridal":      ["clutch", "potli", "embellished", "stone", "evening", "wedding"],
+    "engagement":  ["clutch", "embellished", "evening"],
+    "mehndi":      ["clutch", "potli", "colorful"],
+    "party":       ["clutch", "evening", "embellished"],
+    "formal":      ["tote", "structured", "leather"],
+    "semiformal":  ["tote", "structured"],
+    "semi-formal": ["tote", "structured"],
+    "office":      ["tote", "structured", "leather", "laptop"],
+    "casual":      ["sling", "crossbody", "tote", "canvas"],
+    "summer":      ["straw", "canvas", "light"],
+    "winter":      ["leather", "structured"],
 }
 
 CATEGORY_EXPANSION = {
@@ -391,13 +449,14 @@ def _detect_gender_and_kids(raw_words: set) -> tuple[Optional[str], bool]:
     return target_gender, is_kids
 
 
-def _expand_query(raw_words: set) -> tuple[set, set]:
+def _expand_query(raw_words: set, occasion_vocab: dict = None) -> tuple[set, set]:
+    vocab = occasion_vocab or OCCASION_EXPANSION
     content = raw_words - ALL_STOPWORDS
     expanded = set(content)
     colors = {w for w in raw_words if w in COLOR_WORDS}
     for w in content:
-        if w in OCCASION_EXPANSION:
-            expanded.update(OCCASION_EXPANSION[w])
+        if w in vocab:
+            expanded.update(vocab[w])
         if w in CATEGORY_EXPANSION:
             expanded.update(CATEGORY_EXPANSION[w])
     if "pastel" in raw_words:
@@ -604,7 +663,43 @@ class BrandRecommender:
         # product text, BEFORE any matching happens.
         norm_words = _normalize_query_words(raw_words)
 
-        expanded_words, colors_found = _expand_query(norm_words)
+        # Category is detected before occasion expansion (not after) so a
+        # jewelry/bag search can use jewelry/bag-specific occasion
+        # vocabulary (kundan/statement/tote/...) instead of the default
+        # clothing-oriented one (silk/chiffon/embroidered), which barely
+        # ever appears in jewelry or bag product text.
+        requested_categories = [c for c in CATEGORY_EXPANSION if c in norm_words]
+        wanted_category_words = set()
+        narrowest_category = None
+        if requested_categories:
+            # Use the MOST SPECIFIC category named (the one with the
+            # smallest/narrowest vocabulary), not the union of all of them.
+            # Bug this fixes: the UI's category dropdown appends a broad
+            # word like "shoes" onto a query that already said "heels" —
+            # unioning both vocabularies let plain sneakers/slippers back
+            # in, since they satisfy the broad "shoes" set even though
+            # they don't satisfy "heels". Picking the narrowest category
+            # keeps the user's more specific, explicit intent authoritative.
+            narrowest_category = min(requested_categories, key=lambda c: len(CATEGORY_EXPANSION[c]))
+            wanted_category_words = set(CATEGORY_EXPANSION[narrowest_category])
+
+        occasion_vocab = OCCASION_EXPANSION
+        if narrowest_category in ("jewelry", "jewellery", "jewlery", "jewelery", "jewelrey", "jewleryy", "jewellary", "jewelory"):
+            occasion_vocab = OCCASION_EXPANSION_JEWELRY
+        elif narrowest_category in ("bag", "bags"):
+            occasion_vocab = OCCASION_EXPANSION_BAG
+
+        # A pure-occasion query ("bridal wear", no garment category named)
+        # has no mandatory category filter to narrow the catalog at all —
+        # it relies entirely on bonus-word scoring, and generic words like
+        # "embellished"/"embroidered" are common enough that a cheap,
+        # casual "Pret" (ready-to-wear) shirt can still rank in the top
+        # results purely by containing one of them, even though Pakistani
+        # retailers use "Pret" specifically to mean their light/casual
+        # line — the opposite end of the spectrum from bridal/formal wear.
+        heavy_formal_occasion = bool(norm_words & {"wedding", "baraat", "walima", "bridal", "mehndi", "engagement"})
+
+        expanded_words, colors_found = _expand_query(norm_words, occasion_vocab=occasion_vocab)
         target_gender, is_kids = _detect_gender_and_kids(norm_words)
         attrs_found = _extract_attributes(query_lower)
 
@@ -626,20 +721,6 @@ class BrandRecommender:
                     fabric_hint = weather_to_fabric_hint(get_weather(city))
             except Exception as e:
                 logger.info(f"[BrandRecommender] weather lookup skipped: {e}")
-
-        requested_categories = [c for c in CATEGORY_EXPANSION if c in norm_words]
-        wanted_category_words = set()
-        if requested_categories:
-            # Use the MOST SPECIFIC category named (the one with the
-            # smallest/narrowest vocabulary), not the union of all of them.
-            # Bug this fixes: the UI's category dropdown appends a broad
-            # word like "shoes" onto a query that already said "heels" —
-            # unioning both vocabularies let plain sneakers/slippers back
-            # in, since they satisfy the broad "shoes" set even though
-            # they don't satisfy "heels". Picking the narrowest category
-            # keeps the user's more specific, explicit intent authoritative.
-            narrowest = min(requested_categories, key=lambda c: len(CATEGORY_EXPANSION[c]))
-            wanted_category_words = set(CATEGORY_EXPANSION[narrowest])
 
         max_price = _extract_max_price(query_lower)
 
@@ -668,11 +749,43 @@ class BrandRecommender:
 
         opposite_gender = {"men": "women", "women": "men"}.get(target_gender)
 
-        def _matches_gender_and_kids(product) -> bool:
+        def _matches_gender(product) -> bool:
             text = _text_of(product)
             if opposite_gender and _contains_any_word(text, GENDER_WORDS[opposite_gender]):
                 return False
+            # Previously this only excluded the OPPOSITE gender's items —
+            # a men's search would let gender-neutral-titled products
+            # through (most Pakistani fashion titles don't say "men's" at
+            # all), which meant "men" wasn't actually a real filter, just
+            # a weak "avoid the wrong section" nudge. Requiring the
+            # product to explicitly say the requested gender is stricter
+            # and consistent with how every other named requirement in
+            # this file works (category/color/attribute/budget all
+            # exclude rather than loosely prefer).
+            if target_gender and not _contains_any_word(text, GENDER_WORDS[target_gender]):
+                return False
             return True
+
+        def _matches_kids(product) -> bool:
+            if not is_kids:
+                return True
+            # Was previously a soft ranking-pass preference that silently
+            # fell back to showing adult items if no kids-labeled product
+            # existed among the results — a kids search could return
+            # adult clothing with no indication that's what happened.
+            return _contains_any_word(_text_of(product), KIDS_WORDS)
+
+        def _matches_formality(product) -> bool:
+            if not heavy_formal_occasion:
+                return True
+            # "Pret" is a strong, explicit signal in Pakistani retail —
+            # brands use it specifically to label their casual/light
+            # ready-to-wear line, as opposed to their bridal/formal/
+            # luxury collection. A bridal/wedding search should never
+            # surface a Pret item just because it happens to also carry
+            # a generic word like "embellished" — nearly every product in
+            # these catalogs uses that word somewhere.
+            return "pret" not in _text_of(product)
 
         # --- MANDATORY pass: every specific thing the user named (category,
         # color, and each fabric/embroidery/finish attribute) must ALL be
@@ -690,7 +803,8 @@ class BrandRecommender:
                 return False
             return price_value <= max_price
 
-        def _eligible(relax_category=False, relax_color=False, relax_attrs=False, relax_budget=False):
+        def _eligible(relax_category=False, relax_color=False, relax_attrs=False, relax_budget=False,
+                      relax_gender=False, relax_kids=False, relax_formality=False):
             out = []
             for p in self._products:
                 if not relax_category and not _matches_requested_category(p):
@@ -701,7 +815,11 @@ class BrandRecommender:
                     continue
                 if not relax_budget and max_price is not None and not _matches_budget(p):
                     continue
-                if not _matches_gender_and_kids(p):
+                if not relax_gender and not _matches_gender(p):
+                    continue
+                if not relax_kids and not _matches_kids(p):
+                    continue
+                if not relax_formality and not _matches_formality(p):
                     continue
                 out.append(p)
             return out
@@ -732,6 +850,22 @@ class BrandRecommender:
                     "reason": "no_budget_match",
                     "requested_max_price": max_price,
                 }
+            if is_kids and _eligible(relax_kids=True):
+                return {
+                    "has_results": False, "brands": [], "query": query,
+                    "reason": "no_kids_match",
+                }
+            if heavy_formal_occasion and _eligible(relax_formality=True):
+                return {
+                    "has_results": False, "brands": [], "query": query,
+                    "reason": "no_formal_match",
+                }
+            if target_gender and _eligible(relax_gender=True):
+                return {
+                    "has_results": False, "brands": [], "query": query,
+                    "reason": "no_gender_match",
+                    "requested_gender": target_gender,
+                }
             if requested_categories and _eligible(relax_category=True):
                 return {
                     "has_results": False, "brands": [], "query": query,
@@ -745,11 +879,6 @@ class BrandRecommender:
         # query (extra descriptive words, fabric-weather hint, gender
         # emphasis). This never lets a product back in that failed the
         # mandatory pass above — it only orders the eligible set.
-        if is_kids:
-            kids_strict = [p for p in eligible if _contains_any_word(_text_of(p), KIDS_WORDS)]
-            if kids_strict:
-                eligible = kids_strict
-
         scored = []
         for p in eligible:
             text = _text_of(p)
@@ -812,6 +941,24 @@ class BrandRecommender:
                 return (
                     f"I couldn't find any **{cats}** in the brands I currently track — "
                     f"want me to suggest something else?"
+                )
+            if reason == "no_kids_match":
+                return (
+                    "I couldn't find anything specifically labeled for kids for that request in the "
+                    "brands I currently track — want me to show general options instead, or try a "
+                    "different category?"
+                )
+            if reason == "no_formal_match":
+                return (
+                    "I couldn't find anything from a formal/bridal collection for that request in the "
+                    "brands I currently track — everything eligible turned out to be from their casual "
+                    "ready-to-wear (Pret) line instead. Want me to see those anyway?"
+                )
+            if reason == "no_gender_match":
+                gender = result.get("requested_gender", "")
+                return (
+                    f"I couldn't find anything specifically labeled for {gender} for that request in the "
+                    f"brands I currently track — want me to show general options instead?"
                 )
             return (
                 "I couldn't find matching products for that right now — "
