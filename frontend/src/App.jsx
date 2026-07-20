@@ -219,21 +219,26 @@ export default function App() {
     <div style={S.root}>
       {isHome ? (
         <>
-          <header style={S.header}>
-            <div style={S.logo}>
-              <span style={{ color: COLORS.accent, fontSize: 20 }}>◈</span>
-              <span style={S.logoText}>
-                GALMOUR<span style={{ color: COLORS.accent }}>BOT</span>
+          <header
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "16px clamp(16px, 6vw, 100px)", background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`,
+              flexShrink: 0, gap: 16, flexWrap: "wrap",
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 800, color: COLORS.accent, letterSpacing: 0.5 }}>
+              GALMOURBOT:{" "}
+              <span style={{ fontSize: 14, fontWeight: 500, color: COLORS.textSecondary, letterSpacing: "normal" }}>
+                An AI-Enhanced Smart System for Dress Selection and Accessories Matching
               </span>
             </div>
-            <div />
             {rightControls}
           </header>
           <div
             style={{
               display: "flex",
               justifyContent: "flex-end",
-              padding: "6px 28px",
+              padding: "6px clamp(16px, 6vw, 100px)",
               background: COLORS.bg,
               borderBottom: `1px solid ${COLORS.border}`,
               flexShrink: 0,
@@ -247,7 +252,7 @@ export default function App() {
           <header
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "16px 28px", background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`,
+              padding: "16px clamp(16px, 6vw, 100px)", background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`,
               flexShrink: 0, gap: 16, flexWrap: "wrap",
             }}
           >
@@ -262,7 +267,7 @@ export default function App() {
           <div
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "10px 28px", background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`,
+              padding: "10px clamp(16px, 6vw, 100px)", background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`,
               flexShrink: 0, gap: 16, flexWrap: "wrap",
             }}
           >
